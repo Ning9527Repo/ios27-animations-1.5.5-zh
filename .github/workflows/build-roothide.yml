@@ -23,7 +23,7 @@ jobs:
         env:
           THEOS: ${{ runner.temp }}/theos
         run: |
-          make -C iOS27Animations package FINALPACKAGE=1
+          make -C iOS27Animations package FINALPACKAGE=1 TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify final deb and code signatures
         run: python3 tests/verify-roothide.py iOS27Animations/packages
       - name: Upload package and verification

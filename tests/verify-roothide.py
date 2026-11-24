@@ -4,7 +4,11 @@ root=pathlib.Path(__file__).resolve().parents[1]
 pkgs=pathlib.Path(sys.argv[1]); debs=list(pkgs.glob('*.deb'))
 assert len(debs)==1,debs
 p=debs[0]
-def run(*args): return subprocess.run(args,check=True,text=True,capture_output=True).stdout
+def run(*args):
+    result=subprocess.run(args,text=True,capture_output=True)
+    if result.returncode:
+        raise RuntimeError(f'{args[0]} exited {result.returncode}: {result.stderr.strip()[-3000:]}')
+    return result.stdout
 with tempfile.TemporaryDirectory() as tmp:
     d=pathlib.Path(tmp)
     control=run('dpkg-deb','-f',str(p))
