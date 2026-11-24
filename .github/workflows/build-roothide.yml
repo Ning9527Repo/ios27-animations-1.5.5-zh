@@ -1,0 +1,36 @@
+name: iOS 27 Animations 1.5.5 Chinese RootHide
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-26-intel
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate complete source and Chinese strings
+        run: python3 tests/check-localization.py
+      - name: Install native RootHide toolchain
+        run: |
+          brew install dpkg ldid xz
+          git clone --recursive --depth 1 --shallow-submodules https://github.com/roothide/theos.git "$RUNNER_TEMP/theos"
+          cd "$RUNNER_TEMP/theos"
+          git checkout 958fea4f779943505b15b93c88bb4db8d97b346d
+          git submodule update --init --recursive --depth 1
+          THEOS="$RUNNER_TEMP/theos" "$RUNNER_TEMP/theos/bin/install-sdk" latest
+      - name: Build real RootHide arm64e package
+        env:
+          THEOS: ${{ runner.temp }}/theos
+        run: |
+          make -C iOS27Animations package FINALPACKAGE=1
+      - name: Verify final deb and code signatures
+        run: python3 tests/verify-roothide.py iOS27Animations/packages
+      - name: Upload package and verification
+        uses: actions/upload-artifact@v4
+        with:
+          name: iOS27Animations-1.5.5-ningzh1-arm64e
+          path: |
+            iOS27Animations/packages/*.deb
+            iOS27Animations/packages/*.json
+          if-no-files-found: error

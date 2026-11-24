@@ -1,5 +1,5 @@
-TARGET := iphone:clang:16.5:15.0
-ARCHS = arm64 arm64e
+TARGET := iphone:clang:latest:15.0
+ARCHS = arm64e
 include $(THEOS)/makefiles/common.mk
 BUNDLE_NAME = iOS2627AnimsPrefs
 iOS2627AnimsPrefs_FILES = CG27RootListController.m

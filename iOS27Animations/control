@@ -1,10 +1,10 @@
 Package: com.bazik1337.ios2627anims
-Name: iOS 27 Animations
-Version: 1.5.5
-Architecture: iphoneos-arm
-Description: iOS 27 app open/close animations with the genie effect, and the Notification Center icon fly-in.
-Maintainer: bazik1337
-Author: bazik1337 (@bazik1337)
+Name: iOS 27 动画
+Version: 1.5.5+ningzh1
+Architecture: iphoneos-arm64e
+Description: iOS 27 应用开关精灵动画与通知中心图标飞入；简体中文汉化版。
+Maintainer: Ning&bazik1337
+Author: Ning&bazik1337
 Homepage: https://t.me/ba31k_tweaks
 Section: Tweaks
 Depends: mobilesubstrate, preferenceloader, firmware (>= 15.0)
