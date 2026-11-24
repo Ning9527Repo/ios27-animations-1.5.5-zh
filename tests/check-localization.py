@@ -6,7 +6,7 @@ original=root/'iOS27Animations'
 assert 'THEOS_PACKAGE_SCHEME = roothide' in (original/'Makefile').read_text()
 assert 'ARCHS = arm64e' in (original/'Makefile').read_text()
 assert 'ARCHS = arm64e' in (prefs/'Makefile').read_text()
-assert '-F$(THEOS_PROJECT_DIR)/linker' in (prefs/'Makefile').read_text()
+assert '-F$(THEOS_PROJECT_DIR)/Prefs/linker' in (prefs/'Makefile').read_text()
 stub=prefs/'linker/Preferences.framework/Preferences.tbd'
 assert 'PSListController._specifiers' in stub.read_text()
 assert '/System/Library/PrivateFrameworks/Preferences.framework/Preferences' in stub.read_text()
