@@ -1,6 +1,16 @@
 # История изменений
 
-## 1.5.8+ningzh1 — switch ownership and reusable-list optics
+## 1.5.9+ningzh1 — withdraw global regression, QQ-only native-owned visuals
+
+- Restore all non-QQ runtime paths to 1.5.7; keep the shared configuration fix and original Clock reuse/replay logic. Remove the 1.5.8 global hit-test/hosting/input changes.
+- Only `com.tencent.mqq` uses the passive visual adapter: the native UISwitch owns touch handling, accessibility, value changes and target/actions. No synthetic value inversion or event forwarding is performed.
+- QQ glass is owned by its source switch and validated against parent/cell/list/path. Reuse, hidden/disabled state and another owner invalidate pending visual callbacks.
+- QQ capture uses the real row over an opaque ancestor/system background, rather than the transparent switch-only track. Shader, renderer, material and motion constants remain unchanged.
+- Fixed SHA256 baseline assertions and extracted production Foundation/QuartzCore/Swift stand-ins are included. Real QQ rendering and touch behavior still require device validation; no claim of an observed device fix.
+
+## 1.5.8+ningzh1 — WITHDRAWN after user-confirmed visual regression
+
+The global source-hosted scheme below failed real-device feedback and is not retained by 1.5.9.
 
 - Non-Clock replacements now live inside their native UISwitch instead of a sibling used by host layout. Native alpha is retained; native drawing layers are masked and conditionally restored on detach.
 - Pressed glass samples its own track and stays inside that switch. Gestures bind to source/parent/cell/list/path and cannot commit or restart release after reuse, host rejection, hiding or detachment.

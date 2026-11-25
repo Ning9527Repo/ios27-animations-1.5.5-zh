@@ -8,7 +8,10 @@
 
 ## Интегрированный Theseus Liquid Switch
 
-- Версия `1.5.8+ningzh1` включает исходники Theseus Switch непосредственно в `iOS2627Anims.dylib`; отдельный `TheseusSwitch.dylib` и отдельный пакет не создаются.
+- `1.5.9+ningzh1` withdraws the user-confirmed `1.5.8` regression. All non-QQ runtime paths are restored to `1.5.7`; the shared configuration fix is retained.
+- Only `com.tencent.mqq` uses a passive visual adapter: native UISwitch handles touches, values and actions; source-owned glass captures its row over an opaque background. No QQ fix is claimed as device-verified.
+- `tests/check-qq-switch.py` checks the 1.5.7 scope baseline and executes extracted production ownership/visual control flow on macOS stand-ins. These tests are not a substitute for QQ real-device validation.
+- Theseus Switch remains integrated into the single `iOS2627Anims.dylib`; no independent `TheseusSwitch.dylib` or package is produced.
 - В главной странице настроек добавлен переключатель «Liquid switch» (по умолчанию выключен). Он управляет заменой системных `UISwitch`; изменения распространяются через существующее Darwin-уведомление.
 - Logos-анимации остаются только в SpringBoard; UIKit-фильтр включает ту же библиотеку в приложениях, чтобы там работал переключатель.
 - Оригинальные лицензия, уведомление и манифест Theseus сохранены в `iOS27Animations/SwitchFeature/Vendor`.

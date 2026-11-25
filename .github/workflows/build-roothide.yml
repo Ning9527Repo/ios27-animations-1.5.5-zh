@@ -1,4 +1,4 @@
-name: iOS 27 Animations + Theseus Switch 1.5.8+ningzh1 RootHide
+name: iOS 27 Animations + Theseus Switch 1.5.9+ningzh1 RootHide
 on:
   workflow_dispatch:
 permissions:
@@ -14,8 +14,8 @@ jobs:
           python3 tests/check-localization.py
           python3 tests/check-settings-pages.py
           python3 tests/check-liquid-switch-integration.py
+          python3 tests/check-qq-switch.py
           python3 tests/check-switch-configuration.py
-          python3 tests/check-hosted-switch.py
           python3 iOS27Animations/SwitchFeature/tests/geometry-policy.py
           python3 iOS27Animations/SwitchFeature/tests/clock-replay-policy.py
           python3 iOS27Animations/SwitchFeature/tests/memory-cache-policy.py
@@ -46,7 +46,7 @@ jobs:
           cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus/vendor-manifest.json"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
-          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='1.5.8+ningzh1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
+          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='1.5.9+ningzh1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify final deb and code signatures
         run: |
           for PACKAGE in iOS27Animations/packages/*.deb; do
@@ -59,7 +59,7 @@ jobs:
       - name: Upload package and verification
         uses: actions/upload-artifact@v4
         with:
-          name: iOS27Animations-1.5.8-ningzh1-arm64e
+          name: iOS27Animations-1.5.9-ningzh1-arm64e
           path: |
             iOS27Animations/packages/*.deb
             iOS27Animations/packages/*.json

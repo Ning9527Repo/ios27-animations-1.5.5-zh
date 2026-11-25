@@ -35,16 +35,6 @@ static void NGWithoutAnimation(void (^changes)(void)) {
 }
 static void NGScheduleSwitchSyncAfter(UISwitch *source, NSTimeInterval delay);
 
-// Ordinary hosts retain ownership of their UISwitch. Hide only its native
-// drawing layers, never the UISwitch itself or a sibling that the host lays out.
-@interface NGSwitchNativeMask : NSObject
-@property(nonatomic,weak) CALayer *layer;
-@property(nonatomic,strong) CALayer *savedMask;
-@property(nonatomic,strong) CALayer *emptyMask;
-@end
-@implementation NGSwitchNativeMask
-@end
-
 @interface NGSwitchBinding : NSObject
 @property(nonatomic,weak) UISwitch *source;
 @property(nonatomic,strong) UIView *overlay;
@@ -57,48 +47,8 @@ static void NGScheduleSwitchSyncAfter(UISwitch *source, NSTimeInterval delay);
 @property(nonatomic) BOOL enabledKnown;
 @property(nonatomic) BOOL mirroredEnabled;
 @property(nonatomic) NSUInteger clockResetVersion;
-@property(nonatomic) BOOL sourceHosted;
-@property(nonatomic) BOOL originalClipsToBounds;
-@property(nonatomic,strong) NSMutableArray<NGSwitchNativeMask *> *nativeMasks;
 - (void)commit:(BOOL)value;
 @end
-
-static void NGMaskHostedNativeLayers(UISwitch *source, NGSwitchBinding *binding) {
-    if (!binding.sourceHosted) return;
-    if (!binding.nativeMasks) binding.nativeMasks = [NSMutableArray array];
-    NSArray<CALayer *> *layers = [source.layer.sublayers copy];
-    for (NGSwitchNativeMask *entry in [binding.nativeMasks copy]) {
-        CALayer *layer = entry.layer;
-        if (!layer || layer.superlayer != source.layer) {
-            if (layer.mask == entry.emptyMask) layer.mask = entry.savedMask;
-            [binding.nativeMasks removeObject:entry];
-        }
-    }
-    for (CALayer *layer in layers) {
-        if (layer == binding.overlay.layer) continue;
-        NGSwitchNativeMask *entry = nil;
-        for (NGSwitchNativeMask *candidate in binding.nativeMasks)
-            if (candidate.layer == layer) { entry = candidate; break; }
-        if (!entry) {
-            entry = [NGSwitchNativeMask new]; entry.layer = layer;
-            entry.emptyMask = [CALayer layer];
-            entry.emptyMask.actions = @{@"bounds":NSNull.null,@"position":NSNull.null};
-            [binding.nativeMasks addObject:entry];
-        }
-        if (layer.mask != entry.emptyMask) {
-            entry.savedMask = layer.mask;
-            layer.mask = entry.emptyMask;
-        }
-    }
-}
-
-static void NGRestoreHostedNativeLayers(NGSwitchBinding *binding) {
-    for (NGSwitchNativeMask *entry in binding.nativeMasks) {
-        CALayer *layer = entry.layer;
-        if (layer.mask == entry.emptyMask) layer.mask = entry.savedMask;
-    }
-    [binding.nativeMasks removeAllObjects];
-}
 
 // A replay ticket belongs to a table + logical index path, never to a
 // reusable cell. The real native valueChanged is still delivered immediately.
@@ -205,8 +155,6 @@ static UITableView *NGClockBeginReplay(NGSwitchBinding *binding, BOOL value) {
 - (void)commit:(BOOL)value {
     UISwitch *source = self.source;
     if (!source || !source.enabled || !source.userInteractionEnabled || self.forwarding || self.overlay.hidden) return;
-    if (objc_getAssociatedObject(source, &kNGBindingKey) != self) return;
-    if (self.sourceHosted && (self.overlay.superview != source || !source.window || source.hidden || source.alpha <= 0.01)) return;
     if (source.isOn == value) return;
     NGClockTrace(source, self.overlay, @"userCommit");
     void (^commitNativeValue)(void) = ^{
@@ -228,8 +176,8 @@ static UITableView *NGClockBeginReplay(NGSwitchBinding *binding, BOOL value) {
     } else {
         commitNativeValue();
     }
-    // Reconcile synchronous host rejection/reconfiguration. Hosted controls
-    // apply now; Clock keeps its existing transaction-specific sync path.
+    // Reconcile any synchronous rejection or reconfiguration by the host.
+    // Clock sync is immediate; other apps retain coalesced asynchronous sync.
     NGScheduleSwitchSync(source);
 }
 @end
@@ -261,9 +209,7 @@ static void NGApplySwitchState(UISwitch *source, NGSwitchBinding *binding) {
         NSString *label = source.accessibilityLabel;
         if (binding.overlay.accessibilityLabel != label && ![binding.overlay.accessibilityLabel isEqualToString:label])
             binding.overlay.accessibilityLabel = label;
-        // A source-hosted replacement inherits native alpha exactly once.
-        CGFloat overlayAlpha = binding.sourceHosted ? 1 : binding.originalAlpha;
-        if (binding.overlay.alpha != overlayAlpha) binding.overlay.alpha = overlayAlpha;
+        if (binding.overlay.alpha != binding.originalAlpha) binding.overlay.alpha = binding.originalAlpha;
         if (NGIsClock()) {
             // The sibling overlay owns its visuals; never let a native opacity
             // transition briefly reveal the underlying switch during a list update.
@@ -291,6 +237,7 @@ static void NGScheduleSwitchSyncAfter(UISwitch *source, NSTimeInterval delay) {
 }
 
 void NGScheduleSwitchSync(UISwitch *source) {
+    if (NGIsQQSwitchHost()) { NGQQSyncSwitch(source); return; }
     if (!NSThread.isMainThread) return;
     if (NGIsClock()) {
         // Clock reconfigures visible cells during the same layout transaction.
@@ -299,24 +246,7 @@ void NGScheduleSwitchSync(UISwitch *source) {
         if (binding && !binding.forwarding) NGApplySwitchState(source, binding);
         return;
     }
-    NGSwitchBinding *binding = objc_getAssociatedObject(source, &kNGBindingKey);
-    if (binding.sourceHosted) {
-        // Host reconfiguration can occur inside valueChanged. Reconcile a real
-        // value correction now; same-value updates remain strict no-ops.
-        if (!binding.forwarding) NGApplySwitchState(source, binding);
-        return;
-    }
     NGScheduleSwitchSyncAfter(source, 0);
-}
-
-UIView *NGHostedSwitchHitTest(UISwitch *source, CGPoint point, UIEvent *event) {
-    if (!NSThread.isMainThread || !NGSwitchFeatureEnabled() || NGIsClock()) return nil;
-    NGSwitchBinding *binding = objc_getAssociatedObject(source, &kNGBindingKey);
-    if (!binding.sourceHosted || binding.overlay.superview != source || !source.window ||
-        !source.enabled || !source.userInteractionEnabled || source.hidden || source.alpha <= 0.01 ||
-        ![source pointInside:point withEvent:event]) return nil;
-    CGPoint local = [source convertPoint:point toView:binding.overlay];
-    return [binding.overlay hitTest:local withEvent:event];
 }
 
 BOOL NGClockHasSwitchOverlay(UISwitch *source) {
@@ -326,24 +256,21 @@ BOOL NGClockHasSwitchOverlay(UISwitch *source) {
 }
 
 void NGRemoveSwitch(UISwitch *source) {
+    if (NGIsQQSwitchHost()) { NGQQRemoveSwitch(source); return; }
     [NGBoundSwitches() removeObject:source];
     NGSwitchBinding *binding = objc_getAssociatedObject(source,&kNGBindingKey);
     if (!binding) return;
     NGWithoutAnimation(^{
         [binding.overlay removeFromSuperview];
         objc_setAssociatedObject(source,&kNGBindingKey,nil,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-        if (binding.sourceHosted) {
-            NGRestoreHostedNativeLayers(binding);
-            if (!source.clipsToBounds) source.clipsToBounds = binding.originalClipsToBounds;
-        } else {
-            source.alpha = binding.originalAlpha;
-        }
+        source.alpha = binding.originalAlpha;
         source.isAccessibilityElement = binding.originalAccessibility;
     });
 }
 
 void NGRemoveAllSwitches(void) {
     if (!NSThread.isMainThread) { dispatch_async(dispatch_get_main_queue(), ^{ NGRemoveAllSwitches(); }); return; }
+    if (NGIsQQSwitchHost()) { NGQQRemoveAllSwitches(); return; }
     for (UISwitch *source in NGBoundSwitches().allObjects) NGRemoveSwitch(source);
 }
 
@@ -352,15 +279,6 @@ void NGRemoveAllSwitches(void) {
 // in sync without touching value, gesture, replay or renderer state.
 static void NGApplySwitchGeometry(UISwitch *source, NGSwitchBinding *binding, UIView *parent) {
     CGSize size = CGSizeMake(63,28);
-    if (binding.sourceHosted) {
-        // Parent transforms, row moves, clipping and visibility are inherited
-        // from this exact UISwitch, never copied into a page-level sibling.
-        binding.overlay.transform = CGAffineTransformIdentity;
-        binding.overlay.bounds = (CGRect){CGPointZero,size};
-        binding.overlay.center = CGPointMake(CGRectGetMidX(source.bounds),CGRectGetMidY(source.bounds));
-        binding.overlay.hidden = source.hidden || CGRectIsEmpty(source.bounds);
-        return;
-    }
     CGPoint center = [source convertPoint:CGPointMake(CGRectGetMidX(source.bounds),CGRectGetMidY(source.bounds)) toView:parent];
     // convertPoint already includes the affine translation. The sibling will
     // apply that same translation through its transform; do not count it twice.
@@ -378,11 +296,12 @@ static void NGApplySwitchGeometry(UISwitch *source, NGSwitchBinding *binding, UI
 }
 
 void NGSyncSwitchGeometry(UISwitch *source) {
+    if (NGIsQQSwitchHost()) { NGQQRefreshSwitch(source); return; }
     // Clock already has transaction-specific layout and replay handling.
     // Leave that proven path unchanged in this targeted fix.
     if (!NSThread.isMainThread || NGIsClock() || !NGSwitchFeatureEnabled()) return;
     NGSwitchBinding *binding = objc_getAssociatedObject(source, &kNGBindingKey);
-    UIView *parent = binding.sourceHosted ? source : source.superview;
+    UIView *parent = source.superview;
     if (!binding || binding.refreshing || !parent || !source.window || binding.overlay.superview != parent) return;
     binding.refreshing = YES;
     @try {
@@ -391,6 +310,7 @@ void NGSyncSwitchGeometry(UISwitch *source) {
 }
 
 void NGRefreshSwitch(UISwitch *source) {
+    if (NGIsQQSwitchHost()) { NGQQRefreshSwitch(source); return; }
     if (!NSThread.isMainThread || ![source isKindOfClass:UISwitch.class]) return;
     if (!NGSwitchFeatureEnabled()) { NGRemoveSwitch(source); return; }
     if (!source.superview || !source.window || CGRectIsEmpty(source.bounds)) { NGRemoveSwitch(source); return; }
@@ -399,8 +319,6 @@ void NGRefreshSwitch(UISwitch *source) {
     if (!binding) {
         if (!NGBundleResources()) return; // Do not hide a working native control if resources are missing.
         binding = [NGSwitchBinding new]; binding.source = source;
-        binding.sourceHosted = !NGIsClock();
-        binding.originalClipsToBounds = source.clipsToBounds;
         binding.originalAlpha = source.alpha; binding.originalAccessibility = source.isAccessibilityElement;
         Class component = NSClassFromString(@"NGTheseusSwitch"); if (!component) return;
         binding.overlay = [[component alloc] initWithFrame:CGRectMake(0,0,63,28)];
@@ -413,7 +331,7 @@ void NGRefreshSwitch(UISwitch *source) {
     }
     if (binding.refreshing) return;
     binding.refreshing = YES;
-    UIView *parent = binding.sourceHosted ? source : source.superview;
+    UIView *parent = source.superview;
     BOOL parentChanged = binding.overlay.superview != parent;
     if (parentChanged && NGIsClock()) {
         binding.clockResetVersion++;
@@ -421,21 +339,12 @@ void NGRefreshSwitch(UISwitch *source) {
     }
     @try {
         NGWithoutAnimation(^{
-        if (binding.sourceHosted) {
-            if (binding.overlay.superview != source) {
-                [binding.overlay removeFromSuperview]; [source addSubview:binding.overlay];
-            }
-            [source bringSubviewToFront:binding.overlay];
-            source.clipsToBounds = NO;
-            NGMaskHostedNativeLayers(source, binding);
-        } else if (binding.overlay.superview != parent) {
-            [binding.overlay removeFromSuperview]; [parent insertSubview:binding.overlay aboveSubview:source];
-        }
+        if (binding.overlay.superview != parent) { [binding.overlay removeFromSuperview]; [parent insertSubview:binding.overlay aboveSubview:source]; }
         // Preserve the original Theseus 63 x 28 track and Layout defaults.
         NGApplySwitchGeometry(source, binding, parent);
         if (binding.overlay.userInteractionEnabled != source.userInteractionEnabled) binding.overlay.userInteractionEnabled = source.userInteractionEnabled;
         binding.modifyingNative = YES;
-        if (!binding.sourceHosted && source.alpha != 0) source.alpha = 0;
+        if (source.alpha != 0) source.alpha = 0;
         if (source.isAccessibilityElement) source.isAccessibilityElement = NO;
         binding.modifyingNative = NO;
         if (NGIsClock()) {
@@ -450,9 +359,10 @@ void NGRefreshSwitch(UISwitch *source) {
 }
 
 BOOL NGHandleSwitchAlpha(UISwitch *source, CGFloat alpha) {
+    if (NGIsQQSwitchHost()) return NO;
     if (!NGSwitchFeatureEnabled()) return NO;
     NGSwitchBinding *binding = objc_getAssociatedObject(source,&kNGBindingKey);
-    if (!binding || binding.modifyingNative || binding.sourceHosted) return NO;
+    if (!binding || binding.modifyingNative) return NO;
     binding.originalAlpha = alpha;
     NGScheduleSwitchSync(source);
     return YES;

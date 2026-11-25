@@ -36,42 +36,9 @@ final class NGTheseusSwitch: UIView {
         clipsToBounds = false
         isOpaque = false
         toggle.isolatesClockCapture = Bundle.main.bundleIdentifier == "com.apple.mobiletimer"
-        toggle.confinesHostedGlass = !toggle.isolatesClockCapture
-        toggle.hostedInteractionIsValid = { [weak self] in
-            guard let self = self, let source = self.superview as? UISwitch,
-                  let ownerWindow = source.window, self.window === ownerWindow,
-                  self.frame.intersects(source.bounds) else { return false }
-            var ancestor: UIView? = source
-            while let view = ancestor {
-                guard !view.isHidden, view.alpha > 0.01 else { return false }
-                ancestor = view.superview
-            }
-            return source.isEnabled && source.isUserInteractionEnabled
-        }
-        toggle.hostedIdentity = { [weak self] in self?.currentHostedIdentity() }
         addSubview(toggle)
         toggle.frame = bounds
         toggle.onValueChanged = { [weak self] value in self?.onChanged?(value) }
-    }
-    private func currentHostedIdentity() -> HostedSwitchIdentity? {
-        guard let source = superview as? UISwitch else { return nil }
-        var row: UIView?
-        var list: UIView?
-        var path: IndexPath?
-        var ancestor = source.superview
-        while let view = ancestor {
-            if row == nil, view is UITableViewCell || view is UICollectionViewCell { row = view }
-            if let table = view as? UITableView, let cell = row as? UITableViewCell {
-                list = table; path = table.indexPath(for: cell); break
-            }
-            if let collection = view as? UICollectionView, let cell = row as? UICollectionViewCell {
-                list = collection; path = collection.indexPath(for: cell); break
-            }
-            ancestor = view.superview
-        }
-        return HostedSwitchIdentity(source: ObjectIdentifier(source),
-            parent: source.superview.map(ObjectIdentifier.init), row: row.map(ObjectIdentifier.init),
-            list: list.map(ObjectIdentifier.init), path: path)
     }
     required init?(coder: NSCoder) { return nil }
     override var intrinsicContentSize: CGSize { toggle.intrinsicContentSize }

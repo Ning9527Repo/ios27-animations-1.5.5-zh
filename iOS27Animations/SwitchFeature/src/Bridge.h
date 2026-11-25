@@ -10,13 +10,18 @@ FOUNDATION_EXPORT void NGSwitchFeatureDiagnostic(NSString *event, NSString *deta
 FOUNDATION_EXPORT void NGRemoveAllSwitches(void);
 FOUNDATION_EXPORT void NGRefreshSwitch(UISwitch *source);
 FOUNDATION_EXPORT void NGSyncSwitchGeometry(UISwitch *source);
-FOUNDATION_EXPORT UIView * _Nullable NGHostedSwitchHitTest(UISwitch *source, CGPoint point, UIEvent * _Nullable event);
 FOUNDATION_EXPORT void NGRemoveSwitch(UISwitch *source);
 FOUNDATION_EXPORT void NGScheduleSwitchSync(UISwitch *source);
 FOUNDATION_EXPORT void NGClockResetAlarmCell(UIView *view);
 FOUNDATION_EXPORT void NGClockScheduleReplay(UITableView * _Nullable table);
 FOUNDATION_EXPORT BOOL NGClockHasSwitchOverlay(UISwitch *source);
 FOUNDATION_EXPORT BOOL NGHandleSwitchAlpha(UISwitch *source, CGFloat alpha);
+
+FOUNDATION_EXPORT BOOL NGIsQQSwitchHost(void);
+FOUNDATION_EXPORT void NGQQRefreshSwitch(UISwitch *source);
+FOUNDATION_EXPORT void NGQQSyncSwitch(UISwitch *source);
+FOUNDATION_EXPORT void NGQQRemoveSwitch(UISwitch *source);
+FOUNDATION_EXPORT void NGQQRemoveAllSwitches(void);
 
 @protocol NGSwitchComponent <NSObject>
 @property(nonatomic,copy,nullable) void (^onChanged)(BOOL value);

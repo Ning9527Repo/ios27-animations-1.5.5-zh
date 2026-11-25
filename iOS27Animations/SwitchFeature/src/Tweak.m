@@ -4,7 +4,6 @@
 #import <dlfcn.h>
 #import <QuartzCore/QuartzCore.h>
 #import <stdatomic.h>
-#include <string.h>
 
 typedef void (*NGHookFunction)(Class, SEL, IMP, IMP *);
 static NGHookFunction gNGHook;
@@ -68,11 +67,6 @@ static void (*gSWOnAnimated)(id,SEL,BOOL,BOOL);
 static void (*gSWFrame)(id,SEL,CGRect), (*gSWBounds)(id,SEL,CGRect);
 static void (*gSWCenter)(id,SEL,CGPoint);
 static void (*gSWTransform)(id,SEL,CGAffineTransform);
-static UIView *(*gSWHitTest)(id,SEL,CGPoint,UIEvent *);
-static UIView *NGSwitchHitTest(UISwitch *source, SEL selector, CGPoint point, UIEvent *event) {
-    UIView *overlay = NGHostedSwitchHitTest(source, point, event);
-    return overlay ?: (gSWHitTest ? gSWHitTest(source, selector, point, event) : nil);
-}
 
 static void NGSwitchFrame(UISwitch *s, SEL c, CGRect v) { if (gSWFrame) gSWFrame(s,c,v); if (NGSwitchFeatureEnabled()) NGSyncSwitchGeometry(s); else NGRemoveSwitch(s); }
 static void NGSwitchBounds(UISwitch *s, SEL c, CGRect v) { if (gSWBounds) gSWBounds(s,c,v); if (NGSwitchFeatureEnabled()) NGSyncSwitchGeometry(s); else NGRemoveSwitch(s); }
@@ -185,17 +179,6 @@ __attribute__((constructor)) static void NGInitialize(void) {
             NGInstallMethod(sw,@selector(setCenter:),(IMP)NGSwitchCenter,(IMP *)&gSWCenter);
             NGInstallMethod(sw,@selector(setTransform:),(IMP)NGSwitchTransform,(IMP *)&gSWTransform);
         }
-        if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.mobiletimer"]) {
-            Method hit = class_getInstanceMethod(sw, @selector(hitTest:withEvent:));
-            if (hit && method_getNumberOfArguments(hit) == 4) {
-                char result[16] = {0}, point[128] = {0}, event[16] = {0};
-                method_getReturnType(hit, result, sizeof(result));
-                method_getArgumentType(hit, 2, point, sizeof(point));
-                method_getArgumentType(hit, 3, event, sizeof(event));
-                if (result[0] == '@' && strcmp(point, @encode(CGPoint)) == 0 && event[0] == '@')
-                    NGInstallMethod(sw, @selector(hitTest:withEvent:), (IMP)NGSwitchHitTest, (IMP *)&gSWHitTest);
-            }
-        }
         NGInstallClockReuseHooks();
         // Retry once the main application has completed loading its classes.
         if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.mobiletimer"])
@@ -203,7 +186,7 @@ __attribute__((constructor)) static void NGInitialize(void) {
         dispatch_async(dispatch_get_main_queue(), ^{
             NSUInteger installed = !!gSWLayout + !!gSWWindow + !!gSWParent + !!gSWOn + !!gSWOnAnimated +
                 !!gSWEnabled + !!gSWHidden + !!gSWAlpha + !!gSWInteraction + !!gSWFrame + !!gSWBounds +
-                !!gSWCenter + !!gSWTransform + !!gSWHitTest + !!gAlarmPrepareForReuse + !!gAlarmCellForRow;
+                !!gSWCenter + !!gSWTransform + !!gAlarmPrepareForReuse + !!gAlarmCellForRow;
             NGSwitchFeatureDiagnostic(@"hooks-installed", [NSString stringWithFormat:@"slots=%lu engine=%d",
                 (unsigned long)installed, gNGHook != NULL]);
             NGRecoverSwitchConfiguration();
