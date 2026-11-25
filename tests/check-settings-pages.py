@@ -20,6 +20,9 @@ assert sum(x.get('label')=='Keyboard Glass Mock Effect' and x.get('plist')=='Key
 assert sum(bool(x.get('entry')) for x in main)==0
 assert (root/'iOS27Animations/Makefile').read_text().count('KeyboardGlass/KeyboardBackground.m')==1
 assert 'KeyboardGlassController.m' in (root/'iOS27Animations/Prefs/Makefile').read_text()
+base_header=(root/'iOS27Animations/Prefs/CG27PageController.h').read_text()
+kg_header=(root/'iOS27Animations/Prefs/KeyboardGlassPageController.h').read_text()
+assert 'readPreferenceValue:' not in base_header and 'readPreferenceValue:' in kg_header
 assert sum(x.get('cell')=='PSSwitchCell' for x in pages['KeyboardGlass']['items'])==3
 assert sum(x.get('cell')=='PSSliderCell' for x in pages['KeyboardGlass']['items'])==17
 assert sum(x.get('cell')=='PSGroupCell' for x in pages['KeyboardGlass']['items'])==10
