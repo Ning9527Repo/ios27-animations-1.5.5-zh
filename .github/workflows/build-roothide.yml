@@ -1,4 +1,4 @@
-name: iOS 27 Animations + Theseus Switch 0.1 RootHide
+name: iOS 27 Animations + KeyboardGlass + Theseus Switch 0.2 RootHide
 on:
   workflow_dispatch:
 permissions:
@@ -18,6 +18,12 @@ jobs:
           python3 tests/check-liquid-switch-integration.py
           python3 tests/check-qq-switch.py
           python3 tests/check-switch-configuration.py
+          python3 tests/keyboardglass_test_glass_edges.py
+          python3 tests/keyboardglass_test_candidate_controls.py
+          python3 tests/keyboardglass_test_candidate_highlight.py
+          python3 tests/keyboardglass_test_material_blur.py
+          python3 tests/keyboardglass_test_global_preferences.py
+          python3 tests/keyboardglass_test_settings_cache.py
           python3 iOS27Animations/SwitchFeature/tests/geometry-policy.py
           python3 iOS27Animations/SwitchFeature/tests/clock-replay-policy.py
           python3 iOS27Animations/SwitchFeature/tests/memory-cache-policy.py
@@ -48,7 +54,7 @@ jobs:
           cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/vendor-manifest.json"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
-          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
+          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.2' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify final deb and code signatures
         run: |
           for PACKAGE in iOS27Animations/packages/*.deb; do
@@ -61,7 +67,7 @@ jobs:
       - name: Upload package and verification
         uses: actions/upload-artifact@v4
         with:
-          name: iOS27Animations-0.1-arm64e
+          name: iOS27Animations-0.2-arm64e
           path: |
             iOS27Animations/packages/*.deb
             iOS27Animations/packages/*.json

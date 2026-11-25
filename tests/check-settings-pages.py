@@ -4,22 +4,43 @@ import hashlib,json,pathlib,plistlib,re
 root=pathlib.Path(__file__).resolve().parents[1]
 res=root/'iOS27Animations/Prefs/Resources'
 fixture=json.loads((root/'tests/fixtures/settings-before-submenus.json').read_text())
-pages={name:plistlib.loads((res/(name+'.plist')).read_bytes()) for name in ('Root','AppAnimations','NotificationCenter','Advanced')}
+pages={name:plistlib.loads((res/(name+'.plist')).read_bytes()) for name in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGlass')}
 main=pages['Root']['items']
 assert main[:2]==fixture['root_prefix'], 'master enable changed'
 assert main[2]==fixture['switch_control']
-clean_tail=[]
-for row in fixture['root_tail']:
-    if row.get('label')=='Author': break
-    clean_tail.append({k:v for k,v in row.items() if k!='iconSymbol'})
-assert main[7:]==clean_tail, 'homepage changed beyond removed author/footer/icons'
+kg=main[10]
+assert kg=={'cell':'PSLinkCell','detail':'CG27KeyboardGlassController','isController':True,'label':'Keyboard Glass Mock Effect','plist':'KeyboardGlass'}
+assert main[11:]==[{'cell':'PSGroupCell'}, {'action':'resetSettings','cell':'PSButtonCell','label':'Reset settings'}, {'action':'respring','cell':'PSButtonCell','label':'Respring'}]
 links=[x for x in main if x.get('cell')=='PSLinkCell']
-assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Notification Center','NotificationCenter'),('Advanced','Advanced')]
-for link in links:
+assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Notification Center','NotificationCenter'),('Advanced','Advanced'),('Keyboard Glass Mock Effect','KeyboardGlass')]
+for link in links[:3]:
     assert link['detail']=='CG27PageController' and link['isController'] is True
 assert {x['key'] for x in main if 'key' in x}=={'Enabled','LiquidSwitchEnabled'}
+assert sum(x.get('label')=='Keyboard Glass Mock Effect' and x.get('plist')=='KeyboardGlass' for x in links)==1
+assert sum(bool(x.get('entry')) for x in main)==0
+assert (root/'iOS27Animations/Makefile').read_text().count('KeyboardGlass/KeyboardBackground.m')==1
+assert 'KeyboardGlassController.m' in (root/'iOS27Animations/Prefs/Makefile').read_text()
+assert sum(x.get('cell')=='PSSwitchCell' for x in pages['KeyboardGlass']['items'])==3
+assert sum(x.get('cell')=='PSSliderCell' for x in pages['KeyboardGlass']['items'])==17
+assert sum(x.get('cell')=='PSGroupCell' for x in pages['KeyboardGlass']['items'])==10
+assert all(x.get('cellClass')=='NGGlassSliderCell' and x.get('height')==92 for x in pages['KeyboardGlass']['items'] if x.get('cell')=='PSSliderCell')
+for lang in ('en','ru','zh-Hans'):
+    pairs=re.findall(r'^"([^"\n]+)"\s*=\s*"([^"\n]*)";', (res/(lang+'.lproj')/'KeyboardGlass.strings').read_text(),re.M)
+    trans=dict(pairs)
+    assert len(trans)==len(pairs)
+    labels={x['label'] for x in pages['KeyboardGlass']['items'] if x.get('label')}|{pages['KeyboardGlass']['title']}
+    assert labels<=set(trans),(lang,labels-set(trans))
+kgsource=(root/'iOS27Animations/KeyboardGlass/KeyboardBackground.m').read_text()
+mk=(root/'iOS27Animations/Makefile').read_text()
+assert 'KeyboardGlass/KeyboardBackground.m' in mk
+assert 'NGInstallCandidateHooks();' in kgsource and 'NGInstallBackdropHook();' in kgsource
+assert '[NSBundle bundleForClass:CG27KeyboardGlassController.class]' in (root/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text()
+assert 'loadSpecifiersFromPlistName:@"KeyboardGlass"' in (root/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text()
+assert not (root/'iOS27Animations/Prefs/Resources/KeyboardGlassEntry.plist').exists()
+assert not list((root/'iOS27Animations/Prefs').glob('KeyboardGlass*.dylib'))
+
 expected={'AppAnimations':['AppAnimations','OpenSpeed','CloseSpeed'],'NotificationCenter':['IconFlyIn','ClearSheet'],'Advanced':['Intensity','GestureBounce','FlyStrength','GlobalSlow']}
-controls={x['key']:x for page in pages.values() for x in page['items'] if 'key' in x}
+controls={x['key']:x for name,page in pages.items() if name!='KeyboardGlass' for x in page['items'] if 'key' in x}
 assert controls==fixture['controls'], 'preference controls, defaults, domains or ranges changed'
 for name,keys in expected.items():
     rows=pages[name]['items']

@@ -89,6 +89,22 @@
 			<string>PSGroupCell</string>
 		</dict>
 		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>CG27KeyboardGlassController</string>
+			<key>isController</key>
+			<true/>
+			<key>label</key>
+			<string>Keyboard Glass Mock Effect</string>
+			<key>plist</key>
+			<string>KeyboardGlass</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
 			<key>action</key>
 			<string>resetSettings</string>
 			<key>cell</key>

@@ -1,6 +1,7 @@
 #import <Preferences/PSListController.h>
 #import <Preferences/PSSpecifier.h>
 #import "../../shared/LiquidSwitchConfiguration.h"
+#import "CG27PageController.h"
 #include <spawn.h>
 #include <unistd.h>
 
@@ -36,9 +37,6 @@ static void CG27ApplySliderTint(UIView *view) {
     }
     for (UIView *child in view.subviews) CG27ApplySliderTint(child);
 }
-
-@interface CG27PageController : PSListController
-@end
 
 @implementation CG27PageController
 

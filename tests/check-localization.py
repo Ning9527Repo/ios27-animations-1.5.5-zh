@@ -9,8 +9,10 @@ assert 'ARCHS = arm64e' in (prefs/'Makefile').read_text()
 assert '-F$(THEOS_PROJECT_DIR)/Prefs/linker' in (prefs/'Makefile').read_text()
 stub=prefs/'linker/Preferences.framework/Preferences.tbd'
 assert 'PSListController._specifiers' in stub.read_text()
+assert 'PSTableCell' in stub.read_text()
+assert 'PSSpecifier' in stub.read_text()
 assert '/System/Library/PrivateFrameworks/Preferences.framework/Preferences' in stub.read_text()
-for page in ('Root','AppAnimations','NotificationCenter','Advanced'):
+for page in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGlass'):
     r=prefs/'Resources'
     data=plistlib.loads((r/(page+'.plist')).read_bytes())
     s=(r/'zh-Hans.lproj'/(page+'.strings')).read_text()
@@ -27,8 +29,12 @@ for p in root.rglob('*.plist'):
         plistlib.loads(p.read_bytes())
 entry=plistlib.loads((prefs/'layout/Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').read_bytes())['entry']
 assert entry['label']=='iOS 27 动画' and entry['icon']=='icon.png'
+main=plistlib.loads((prefs/'Resources/Root.plist').read_bytes())['items']
+links=[x for x in main if x.get('cell')=='PSLinkCell']
+assert sum(x.get('label')=='Keyboard Glass Mock Effect' and x.get('plist')=='KeyboardGlass' for x in links)==1
+assert not (prefs/'KeyboardGlassEntry.plist').exists()
 control=dict(line.split(': ',1) for line in (original/'control').read_text().splitlines() if ': ' in line)
-assert control['Version']=='0.1' and control['Architecture']=='iphoneos-arm64e'
+assert control['Version']=='0.2' and control['Architecture']=='iphoneos-arm64e'
 assert control['Package']=='com.ning.ios2627anims'
 assert control['Name']=='iOS 27 动画' and 'Icon' not in control
 assert control['Author']=='Ning' and control['Maintainer']=='Ning'

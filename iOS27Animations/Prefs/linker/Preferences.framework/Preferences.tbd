@@ -6,6 +6,6 @@ current-version: 0
 compatibility-version: 0
 exports:
   - targets:      [ arm64e-ios ]
-    objc-classes: [ PSListController ]
+    objc-classes: [ PSListController, PSTableCell, PSSpecifier ]
     objc-ivars:   [ PSListController._specifiers ]
 ...

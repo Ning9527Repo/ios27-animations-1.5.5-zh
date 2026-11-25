@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory() as tmp:
     control=run('dpkg-deb','-f',str(p))
     fields=dict(x.split(': ',1) for x in control.splitlines() if ': ' in x)
     assert fields['Architecture']=='iphoneos-arm64e',fields
-    assert fields['Version']=='0.1',fields
+    assert fields['Version']=='0.2',fields
     assert fields['Author']=='Ning',fields
     assert fields['Maintainer']=='Ning',fields
     assert fields['Package']=='com.ning.ios2627anims',fields
@@ -24,13 +24,23 @@ with tempfile.TemporaryDirectory() as tmp:
     assert 'com.bazik1337.ios2627anims' in fields['Replaces'].split(', '),fields
     assert 'com.opa334.libsandy' in fields['Depends'],fields
     run('dpkg-deb','-x',str(p),str(d))
-    profile=d/'Library/libSandy/iOS27Animations_SwitchReadConfig.plist'
-    assert plistlib.loads(profile.read_bytes())=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
-    assert profile.stat().st_mode & 0o777 == 0o644
     archive=subprocess.check_output(['dpkg-deb','--fsys-tarfile',str(p)])
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
-        member=next(x for x in tar.getmembers() if x.name.lstrip('./')=='Library/libSandy/iOS27Animations_SwitchReadConfig.plist')
-        assert member.uid==member.gid==0 and member.mode==0o644,(member.uid,member.gid,member.mode)
+        members={x.name.lstrip('./'):x for x in tar.getmembers()}
+    profile=d/'Library/libSandy/iOS27Animations_SwitchReadConfig.plist'
+    assert plistlib.loads(profile.read_bytes())=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
+    kgread=d/'Library/libSandy/KeyboardGlass_ReadConfig.plist'
+    kgwrite=d/'Library/libSandy/KeyboardGlass_WriteConfig.plist'
+    assert plistlib.loads(kgread.read_bytes())=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/KeyboardGlass-preferences.plist'}]}
+    assert plistlib.loads(kgwrite.read_bytes())=={'AllowedProcesses':['com.apple.Preferences'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read-write','path':'/rootfs/var/mobile/Library/Accessibility/KeyboardGlass-preferences.plist'}]}
+    for item in (profile,kgread,kgwrite):
+        assert item.stat().st_mode & 0o777 == 0o644
+    assert plistlib.loads((d/'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/KeyboardGlass.plist').read_bytes())['items']
+    for lang in ('en','ru','zh-Hans'):
+        assert (d/f'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/{lang}.lproj/KeyboardGlass.strings').is_file()
+    for profile_name in ('iOS27Animations_SwitchReadConfig.plist','KeyboardGlass_ReadConfig.plist','KeyboardGlass_WriteConfig.plist'):
+        member=next(x for x in tar.getmembers() if x.name.lstrip('./')=='Library/libSandy/'+profile_name)
+        assert member.uid==member.gid==0 and member.mode==0o644,(member.name,member.uid,member.gid,member.mode)
     files=[x.relative_to(d).as_posix() for x in d.rglob('*') if x.is_file()]
     assert not any(x.startswith('var/jb/') for x in files),files
     lib=d/'Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib'
@@ -39,7 +49,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert lib.is_file() and app.is_file()
     resource=d/'Library/Application Support/iOS27Animations/TheseusSwitchResources.bundle'
     assert (resource/'default.metallib').stat().st_size>1000
-    assert plistlib.loads((resource/'Info.plist').read_bytes())['CFBundleVersion']=='0.1'
+    assert plistlib.loads((resource/'Info.plist').read_bytes())['CFBundleVersion']=='0.2'
     assert sorted(x.relative_to(d).as_posix() for x in d.rglob('*.dylib'))==['Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib']
     switch_rows=plistlib.loads((prefs/'Root.plist').read_bytes())['items']
     assert sum(x.get('key')=='LiquidSwitchEnabled' for x in switch_rows)==1
@@ -60,7 +70,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert (prefs/'AppAnimations.plist').is_file() and (prefs/'NotificationCenter.plist').is_file()
     for page in ('AppAnimations','NotificationCenter','Advanced'):
         assert sum(x.get('cell')=='PSGroupCell' for x in plistlib.loads((prefs/(page+'.plist')).read_bytes())['items'])==1
-    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='0.1'
+    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='0.2'
     out=[]
     for f in (lib,app):
         data=f.read_bytes()

@@ -148,7 +148,8 @@ static void NGInstallClockReuseHooks(void) {
 
 #ifndef NG_TESTING
 __attribute__((constructor)) static void NGInitialize(void) {
-    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.bazik1337.ios2627anims.prefs"]) return;
+    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Preferences"] ||
+        [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.bazik1337.ios2627anims.prefs"]) return;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, NGSwitchPreferenceChanged,

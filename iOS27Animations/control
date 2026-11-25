@@ -1,12 +1,12 @@
 Package: com.ning.ios2627anims
 Name: iOS 27 动画
-Version: 0.1
+Version: 0.2
 Architecture: iphoneos-arm64e
 Description: iOS 27 应用开关精灵动画与通知中心图标飞入；简体中文汉化版。
 Maintainer: Ning
 Author: Ning
 Homepage: https://github.com/Ning9527Repo/ios27-animations-1.5.5-zh
 Section: Tweaks
-Depends: mobilesubstrate, preferenceloader, com.opa334.libsandy, firmware (>= 15.0)
-Conflicts: com.bazik1337.ios2627anims, com.bazik1337.ios27animsreborn, com.bazik.codexgenie27, com.bazik.genie27
-Replaces: com.bazik1337.ios2627anims, com.bazik.codexgenie27
+Depends: mobilesubstrate, preferenceloader, com.opa334.libsandy, firmware (>= 16.0)
+Conflicts: com.bazik1337.ios2627anims, com.ning.keyboardglass, com.bazik1337.ios27animsreborn, com.bazik.codexgenie27, com.bazik.genie27
+Replaces: com.bazik1337.ios2627anims, com.ning.keyboardglass, com.bazik.codexgenie27

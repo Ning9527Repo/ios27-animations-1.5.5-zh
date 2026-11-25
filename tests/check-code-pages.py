@@ -14,7 +14,7 @@ def check(data):
    platform,minimum=struct.unpack_from('<II',data,off+8);assert platform==2
   if cmd==0x25: minimum=struct.unpack_from('<I',data,off+8)[0]
   off+=size
- assert off==32+sz and minimum==0xf0000 and signature
+ assert off==32+sz and minimum==0x100000 and signature
  pos,size=signature;assert pos+size<=len(data)
  magic,length,count=struct.unpack_from('>III',data,pos)
  assert magic==0xfade0cc0 and length<=size
@@ -33,7 +33,7 @@ def check(data):
    assert got==data[base+hashoff+k*hsize:base+hashoff+(k+1)*hsize],('code page',k)
   reports.append({'hash_type':htype,'page_bytes':pagesize,'pages':ncode})
  assert reports
- return {'cpu_subtype':hex(sub),'minimum_ios':'15.0','signed_code_pages':reports}
+ return {'cpu_subtype':hex(sub),'minimum_ios':'16.0','signed_code_pages':reports}
 
 def verify(path):
  with tempfile.TemporaryDirectory() as tmp:

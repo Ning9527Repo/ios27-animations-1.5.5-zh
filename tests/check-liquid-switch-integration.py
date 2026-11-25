@@ -35,6 +35,8 @@ for lang in ('en','ru','zh-Hans'):
 wf=(root/'.github/workflows/build-roothide.yml').read_text()
 assert 'prepare-switch-resources.py' in wf and 'SwitchFeature/LICENSE-Theseus' in wf
 assert 'TheseusSwitch.dylib' not in mk+wf
+assert 'KeyboardGlass/KeyboardBackground.m' in mk
+assert (root/'iOS27Animations/layout/Library/libSandy/KeyboardGlass_ReadConfig.plist').is_file()
 config=(root/'shared/LiquidSwitchConfiguration.h').read_text()
 reader=(feature/'src/NGSwitchPreferences.m').read_text()
 assert 'CFPreferencesCopyAppValue' not in hooks+reader
@@ -44,6 +46,10 @@ assert 'libSandy_applyProfile' in reader
 assert 'com.opa334.libsandy' in (root/'iOS27Animations/control').read_text()
 profile=plistlib.loads((root/'iOS27Animations/layout/Library/libSandy/iOS27Animations_SwitchReadConfig.plist').read_bytes())
 assert profile=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
+kgread=plistlib.loads((root/'iOS27Animations/layout/Library/libSandy/KeyboardGlass_ReadConfig.plist').read_bytes())
+assert kgread=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/KeyboardGlass-preferences.plist'}]}
+kgprefs=(root/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text()
+assert 'NGPublishGlobalSnapshot(&publishError)' in kgprefs
 assert 'CG27LSSavedValueFromImage' in config and 'CG27LSPublishValue' in config
 assert 'check-switch-configuration.py' in wf
 print('PASS: one main tweak; shared validated snapshot, exact read-only profile, saved-value migration, bounded startup recovery; full vendored Swift/Metal retained')
