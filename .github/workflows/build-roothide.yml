@@ -29,7 +29,7 @@ jobs:
           test -n "$STAGE" && test -n "$DYLIB"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
-          make -C iOS27Animations before-package internal-package after-package FINALPACKAGE=1 TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
+          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='1.5.5+ningzh1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify final deb and code signatures
         run: python3 tests/verify-roothide.py iOS27Animations/packages
       - name: Upload package and verification
