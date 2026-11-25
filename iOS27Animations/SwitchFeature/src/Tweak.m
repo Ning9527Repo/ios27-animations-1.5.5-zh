@@ -7,6 +7,7 @@
 
 typedef void (*NGHookFunction)(Class, SEL, IMP, IMP *);
 static NGHookFunction gNGHook;
+// Preference key: LiquidSwitchEnabled; absent/unreadable updates retain this cache.
 static _Atomic(BOOL) gNGSwitchFeatureEnabled = NO;
 static NSString *const kNGSwitchChanged = @"com.bazik1337.ios2627anims/changed";
 
@@ -14,12 +15,9 @@ BOOL NGSwitchFeatureEnabled(void) {
     return atomic_load_explicit(&gNGSwitchFeatureEnabled, memory_order_acquire);
 }
 
-static BOOL NGReadSwitchFeaturePreference(void) {
-    CFPropertyListRef value = CFPreferencesCopyAppValue(CFSTR("LiquidSwitchEnabled"), CFSTR("com.bazik1337.ios2627anims"));
-    BOOL enabled = value && CFGetTypeID(value) == CFBooleanGetTypeID() && CFBooleanGetValue((CFBooleanRef)value);
-    if (value) CFRelease(value);
-    return enabled;
-}
+// Configuration is loaded through the same shared, authorized snapshot in every App.
+// Only a validated explicit OFF may remove existing overlays.
+static BOOL gNGHasValidSwitchConfiguration = NO;
 
 static void NGVisitSwitches(UIView *view) {
     if ([view isKindOfClass:UISwitch.class]) NGRefreshSwitch((UISwitch *)view);
@@ -36,14 +34,24 @@ static void NGRefreshVisibleSwitches(void) {
 }
 
 static void NGApplySwitchFeaturePreference(void) {
-    CFPreferencesAppSynchronize(CFSTR("com.bazik1337.ios2627anims"));
-    BOOL enabled = NGReadSwitchFeaturePreference();
+    if (!NSThread.isMainThread) {
+        dispatch_async(dispatch_get_main_queue(), ^{ NGApplySwitchFeaturePreference(); });
+        return;
+    }
+    BOOL enabled = NO;
+    if (!NGLoadSwitchFeaturePreference(&enabled)) return;
+    BOOL wasKnown = gNGHasValidSwitchConfiguration;
+    gNGHasValidSwitchConfiguration = YES;
     BOOL old = atomic_exchange_explicit(&gNGSwitchFeatureEnabled, enabled, memory_order_acq_rel);
-    if (old == enabled) return;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (!NGSwitchFeatureEnabled()) { NGRemoveAllSwitches(); return; }
-        NGRefreshVisibleSwitches();
-    });
+    if (wasKnown && old == enabled) return;
+    if (!enabled) { NGRemoveAllSwitches(); return; }
+    NGRefreshVisibleSwitches();
+}
+
+static void NGRecoverSwitchConfiguration(void) {
+    NGPublishSwitchPreferenceIfTrusted();
+    NGApplySwitchFeaturePreference();
+    if (NGSwitchFeatureEnabled()) NGRefreshVisibleSwitches();
 }
 
 static void NGSwitchPreferenceChanged(__unused CFNotificationCenterRef center, __unused void *observer,
@@ -143,7 +151,6 @@ __attribute__((constructor)) static void NGInitialize(void) {
     if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.bazik1337.ios2627anims.prefs"]) return;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        atomic_store_explicit(&gNGSwitchFeatureEnabled, NGReadSwitchFeaturePreference(), memory_order_release);
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, NGSwitchPreferenceChanged,
                                         (__bridge CFStringRef)kNGSwitchChanged, NULL,
                                         CFNotificationSuspensionBehaviorDeliverImmediately);
@@ -176,7 +183,25 @@ __attribute__((constructor)) static void NGInitialize(void) {
         // Retry once the main application has completed loading its classes.
         if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.mobiletimer"])
             dispatch_async(dispatch_get_main_queue(), ^{ NGInstallClockReuseHooks(); });
-        if (NGSwitchFeatureEnabled()) dispatch_async(dispatch_get_main_queue(), ^{ NGRefreshVisibleSwitches(); });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSUInteger installed = !!gSWLayout + !!gSWWindow + !!gSWParent + !!gSWOn + !!gSWOnAnimated +
+                !!gSWEnabled + !!gSWHidden + !!gSWAlpha + !!gSWInteraction + !!gSWFrame + !!gSWBounds +
+                !!gSWCenter + !!gSWTransform + !!gAlarmPrepareForReuse + !!gAlarmCellForRow;
+            NGSwitchFeatureDiagnostic(@"hooks-installed", [NSString stringWithFormat:@"slots=%lu engine=%d",
+                (unsigned long)installed, gNGHook != NULL]);
+            NGRecoverSwitchConfiguration();
+            for (NSString *name in @[UIApplicationDidFinishLaunchingNotification, UIApplicationDidBecomeActiveNotification]) {
+                [NSNotificationCenter.defaultCenter addObserverForName:name object:nil queue:NSOperationQueue.mainQueue
+                    usingBlock:^(__unused NSNotification *notification) { NGRecoverSwitchConfiguration(); }];
+            }
+            // Bounded startup recovery for a publisher/sandyd that starts after this App.
+            for (NSNumber *delay in @[@0.5, @2, @5]) {
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay.doubleValue * NSEC_PER_SEC)),
+                               dispatch_get_main_queue(), ^{
+                    if (!gNGHasValidSwitchConfiguration) NGRecoverSwitchConfiguration();
+                });
+            }
+        });
     });
 }
 #endif

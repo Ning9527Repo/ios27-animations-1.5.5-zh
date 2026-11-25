@@ -1,5 +1,11 @@
 # История изменений
 
+## 1.5.7+ningzh1 — integrated liquid switch configuration fix
+
+- Settings and SpringBoard publish the existing saved `LiquidSwitchEnabled` value to one shared snapshot; sandboxed apps no longer query a foreign preference domain.
+- Read access is limited to the switch snapshot through a packaged libSandy profile. Missing or malformed updates preserve the last valid state; startup/foreground recovery and metadata diagnostics are included.
+- Clock hooks, reuse handling, switch geometry, rendering and animation sources are retained. Tests cover the production snapshot/apply code and independent producer/consumer processes on macOS; real-device rendering still requires installation testing.
+
 ## 1.5.5 / Reborn 1.0.0 Beta 2
 
 - fixed crash on ios 15

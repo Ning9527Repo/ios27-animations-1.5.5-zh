@@ -32,6 +32,21 @@ for name,keys in expected.items():
         trans=dict(pairs); assert len(trans)==len(pairs), 'duplicate translation'
         labels={x['label'] for x in rows if x.get('label')}|{pages[name]['title']}
         assert labels<=set(trans), (name,lang,labels-set(trans))
+controller_path='iOS27Animations/Prefs/CG27RootListController.m'
 for path,digest in fixture['immutable'].items():
-    assert hashlib.sha256((root/path).read_bytes()).hexdigest()==digest, 'unrelated code changed: '+path
-print('PASS: three submenu routes, one card per page, all 10 existing controls unchanged; one switch toggle added, three languages, engine/controller byte-identical (static only)')
+    if path != controller_path:
+        assert hashlib.sha256((root/path).read_bytes()).hexdigest()==digest, 'unrelated code changed: '+path
+baseline=json.loads((root/'tests/fixtures/settings-controller-before-switch-fix.json').read_text())
+source=(root/controller_path).read_text()
+starts=list(re.finditer(r'^[-+] \([^\n]+\).*?\{',source,re.M)); methods={}
+for i,m in enumerate(starts):
+    end=starts[i+1].start() if i+1<len(starts) else len(source)
+    text=source[m.start():end].split('\n@end',1)[0].strip()
+    cls=re.findall(r'^@implementation (\w+)',source[:m.start()],re.M)[-1]
+    key=cls+' '+m.group().rsplit('{',1)[0].strip()
+    assert key not in methods,key
+    methods[key]=hashlib.sha256(text.encode()).hexdigest()
+assert set(methods)==set(baseline['methods'])|set(baseline['added_methods'])
+for key,digest in baseline['methods'].items():
+    if key not in baseline['changed_methods']: assert methods[key]==digest,key
+print('PASS: three submenus, one card per page, all 10 controls/languages and animation engine unchanged; only switch publish/save/reset controller paths changed (static only)')

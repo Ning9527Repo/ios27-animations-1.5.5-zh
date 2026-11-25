@@ -1,0 +1,28 @@
+{
+  "baseline_commit": "328c14bb496623417d5c061e629a30153f87ea46",
+  "methods": {
+    "CG27PageController - (NSArray *)specifiers": "7aa3254c0d6fdad9bdffe208c603a09a25eb5a0cb3e13e9c397371b77b281811",
+    "CG27PageController - (void)viewDidLoad": "a688b019d10f616207a1c598e5829c430d378757d314c55dbda21e21cf411782",
+    "CG27PageController - (void)viewWillAppear:(BOOL)animated": "53fc87d9c6bd0207bd3f4136aded010124b299912c639d600031f4a6217044f3",
+    "CG27PageController - (void)viewWillDisappear:(BOOL)animated": "79f3c8d2eb88cfad0c241f8f47d7ea2a342e78d9d1b73d10e4499c55307cf506",
+    "CG27PageController - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath": "55d8e1eefd297c1393ac864483f01af62a92050d1ae74a71cac35a5cde80fe17",
+    "CG27RootListController - (void)viewDidLoad": "2b061005d042d5870e72512e3d56b4dc3a208c455e28f52bdab0cecb8beb418d",
+    "CG27RootListController - (void)dealloc": "598304c1eff488aa6e610c005d9a0ccd9a616dd6d9f876f946fbb983658158ed",
+    "CG27RootListController - (void)viewDidAppear:(BOOL)animated": "fdecbb3f4bdcb23d044c0abdad8f2e580ecbbfb82f8e53776bba9e80d78686b0",
+    "CG27RootListController - (void)showPrompt": "3e5cb47b652839ede7bf9f3996399d2beb351f736b784f15dd79ae2fb49ba4ff",
+    "CG27RootListController - (void)resetSettings": "0dd2761d6fcb13a8f30b9f0a8ac58b7a60ad54eb7e027516509ae08624359d28",
+    "CG27RootListController - (void)performReset": "b1c8931548aa5f494b8a1cc0638300edb8c712e7faef784788b4cb5137595019",
+    "CG27RootListController - (void)respring": "74ecc2c5b989c1aa48b4afd36e3cacc1a9f643cc592d1e1437ec09865d748310",
+    "CG27RootListController - (void)open:(NSString *)url": "bc742bb56c3f9dfb9f35014743040085840fc54c6a8e5fc00e428e7694dc52bc",
+    "CG27RootListController - (void)openTelegram": "b2c7b9b3ddf396d3e155185e66783978b3752f757ce3e9363ee8f0f55ed2510d",
+    "CG27RootListController - (void)openChannel": "118f1f45574ee40f6c00bb46ec455ed7a1eaa77148c538def8fda857dd4b0850",
+    "CG27RootListController - (void)openGitHub": "ceaecfa7e9a2ce9c12de3f6ef394419d7078ebd07e10aef357fc5b860eef5821"
+  },
+  "changed_methods": [
+    "CG27PageController - (void)viewWillAppear:(BOOL)animated",
+    "CG27RootListController - (void)performReset"
+  ],
+  "added_methods": [
+    "CG27PageController - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier"
+  ]
+}

@@ -14,10 +14,14 @@ with tempfile.TemporaryDirectory() as tmp:
     control=run('dpkg-deb','-f',str(p))
     fields=dict(x.split(': ',1) for x in control.splitlines() if ': ' in x)
     assert fields['Architecture']=='iphoneos-arm64e',fields
-    assert fields['Version']=='1.5.6+ningzh1',fields
+    assert fields['Version']=='1.5.7+ningzh1',fields
     assert fields['Author']=='Ning&bazik1337',fields
     assert fields['Maintainer']=='Ning&bazik1337',fields
+    assert 'com.opa334.libsandy' in fields['Depends'],fields
     run('dpkg-deb','-x',str(p),str(d))
+    profile=d/'Library/libSandy/iOS27Animations_SwitchReadConfig.plist'
+    assert plistlib.loads(profile.read_bytes())=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
+    assert profile.stat().st_mode & 0o777 == 0o644
     files=[x.relative_to(d).as_posix() for x in d.rglob('*') if x.is_file()]
     assert not any(x.startswith('var/jb/') for x in files),files
     lib=d/'Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib'
@@ -26,7 +30,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert lib.is_file() and app.is_file()
     resource=d/'Library/Application Support/iOS27Animations/TheseusSwitchResources.bundle'
     assert (resource/'default.metallib').stat().st_size>1000
-    assert plistlib.loads((resource/'Info.plist').read_bytes())['CFBundleVersion']=='1.5.6.1'
+    assert plistlib.loads((resource/'Info.plist').read_bytes())['CFBundleVersion']=='1.5.7.1'
     assert sorted(x.relative_to(d).as_posix() for x in d.rglob('*.dylib'))==['Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib']
     switch_rows=plistlib.loads((prefs/'Root.plist').read_bytes())['items']
     assert sum(x.get('key')=='LiquidSwitchEnabled' for x in switch_rows)==1
@@ -38,7 +42,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert (prefs/'AppAnimations.plist').is_file() and (prefs/'NotificationCenter.plist').is_file()
     for page in ('AppAnimations','NotificationCenter','Advanced'):
         assert sum(x.get('cell')=='PSGroupCell' for x in plistlib.loads((prefs/(page+'.plist')).read_bytes())['items'])==1
-    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='1.5.6'
+    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='1.5.7'
     out=[]
     for f in (lib,app):
         data=f.read_bytes()

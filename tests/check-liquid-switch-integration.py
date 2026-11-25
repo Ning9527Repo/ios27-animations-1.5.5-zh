@@ -11,7 +11,7 @@ for rel,upstream in manifest.items():
     assert digest==(patches.get(rel,{}).get('patched_sha256') or upstream),(rel,digest)
 mk=(root/'iOS27Animations/Makefile').read_text()
 assert 'TWEAK_NAME = iOS2627Anims' in mk
-for f in ('src/NGSwitch.m','src/NGResources.m','src/Tweak.m','src/TheseusBridge.swift','src/TheseusBundle.swift'):
+for f in ('src/NGSwitch.m','src/NGResources.m','src/NGSwitchPreferences.m','src/Tweak.m','src/TheseusBridge.swift','src/TheseusBundle.swift'):
     assert f in mk
 assert 'find $(SWITCH_DIR)/Vendor/Theseus/Sources/Theseus' in mk
 assert 'iOS2627Anims-Bridging-Header.h' in mk or (root/'iOS27Animations/iOS2627Anims-Bridging-Header.h').is_file()
@@ -35,4 +35,15 @@ for lang in ('en','ru','zh-Hans'):
 wf=(root/'.github/workflows/build-roothide.yml').read_text()
 assert 'prepare-switch-resources.py' in wf and 'SwitchFeature/LICENSE-Theseus' in wf
 assert 'TheseusSwitch.dylib' not in mk+wf
-print('PASS: switch Swift/ObjC sources compile into one animation tweak target; one UI control; one runtime library contract')
+config=(root/'shared/LiquidSwitchConfiguration.h').read_text()
+reader=(feature/'src/NGSwitchPreferences.m').read_text()
+assert 'CFPreferencesCopyAppValue' not in hooks+reader
+assert 'if (!NGLoadSwitchFeaturePreference(&enabled)) return;' in hooks
+assert 'if (!gNGHasValidSwitchConfiguration) NGRecoverSwitchConfiguration();' in hooks
+assert 'libSandy_applyProfile' in reader
+assert 'com.opa334.libsandy' in (root/'iOS27Animations/control').read_text()
+profile=plistlib.loads((root/'iOS27Animations/layout/Library/libSandy/iOS27Animations_SwitchReadConfig.plist').read_bytes())
+assert profile=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
+assert 'CG27LSSavedValueFromImage' in config and 'CG27LSPublishValue' in config
+assert 'check-switch-configuration.py' in wf
+print('PASS: one main tweak; shared validated snapshot, exact read-only profile, saved-value migration, bounded startup recovery; full vendored Swift/Metal retained')

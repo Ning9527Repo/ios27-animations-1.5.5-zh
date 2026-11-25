@@ -4,6 +4,9 @@
 NS_ASSUME_NONNULL_BEGIN
 FOUNDATION_EXPORT NSBundle * _Nullable NGBundleResources(void);
 FOUNDATION_EXPORT BOOL NGSwitchFeatureEnabled(void);
+FOUNDATION_EXPORT BOOL NGLoadSwitchFeaturePreference(BOOL *enabled);
+FOUNDATION_EXPORT void NGPublishSwitchPreferenceIfTrusted(void);
+FOUNDATION_EXPORT void NGSwitchFeatureDiagnostic(NSString *event, NSString *detail);
 FOUNDATION_EXPORT void NGRemoveAllSwitches(void);
 FOUNDATION_EXPORT void NGRefreshSwitch(UISwitch *source);
 FOUNDATION_EXPORT void NGSyncSwitchGeometry(UISwitch *source);

@@ -1,5 +1,6 @@
 #import <Preferences/PSListController.h>
 #import <Preferences/PSSpecifier.h>
+#import "../../shared/LiquidSwitchConfiguration.h"
 #include <spawn.h>
 #include <unistd.h>
 
@@ -10,7 +11,14 @@ static NSString *const kCG27GitHub = @"https://github.com/ba31k/ios26-27-anims";
 
 @interface PSListController (CG27)
 - (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target bundle:(NSBundle *)bundle;
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier;
 @end
+
+static void CG27PublishLiquidSwitchPreference(void) {
+    NSError *error = nil;
+    if (!CG27LSPublishSavedPreference(&error))
+        NSLog(@"[iOS27Switch] Settings publish failed: %@:%ld", error.domain, (long)error.code);
+}
 
 static NSString *CG27L(NSString *key) {
     return [[NSBundle bundleWithIdentifier:@"com.bazik1337.ios2627anims.prefs"] localizedStringForKey:key value:key table:@"Root"];
@@ -67,8 +75,21 @@ static NSArray *CG27Prepare(NSArray *specifiers) {
     [UISwitch appearanceWhenContainedInInstancesOfClasses:@[self.class]].onTintColor = CG27Tint();
 }
 
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+    [super setPreferenceValue:value specifier:specifier];
+    if (![[specifier propertyForKey:@"key"] isEqualToString:@"LiquidSwitchEnabled"] ||
+        ![[specifier propertyForKey:@"defaults"] isEqualToString:CG27LSDomain]) return;
+    CFPreferencesAppSynchronize((__bridge CFStringRef)CG27LSDomain);
+    BOOL enabled = NO;
+    if (!CG27LSDecodeBoolean(value, &enabled)) return;
+    NSError *error = nil;
+    if (!CG27LSPublishValue(enabled, &error))
+        NSLog(@"[iOS27Switch] Settings save publish failed: %@:%ld", error.domain, (long)error.code);
+}
+
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    CG27PublishLiquidSwitchPreference();
     self.navigationController.navigationBar.tintColor = CG27Tint();
 }
 
@@ -169,6 +190,9 @@ static NSArray *CG27Prepare(NSArray *specifiers) {
         CFRelease(stored);
     }
     CFPreferencesAppSynchronize(domain);
+    NSError *error = nil;
+    if (!CG27LSPublishValue(NO, &error))
+        NSLog(@"[iOS27Switch] Reset publish failed: %@:%ld", error.domain, (long)error.code);
     CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
                                          CFSTR("com.bazik1337.ios2627anims/changed"), NULL, NULL, YES);
     [self reloadSpecifiers];
