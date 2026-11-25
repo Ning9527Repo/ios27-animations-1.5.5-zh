@@ -1,8 +1,6 @@
 // Included by KeyboardGlassController.m after its controller declaration.
 // One labeled slider row inside the system's grouped card. No extra card layers.
-@interface PSTableCell : UITableViewCell
-- (instancetype)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)identifier specifier:(PSSpecifier *)specifier;
-@end
+#import <Preferences/PSTableCell.h>
 @interface NGGlassSliderCell : PSTableCell
 @property(nonatomic,strong) PSSpecifier *ngSpecifier;
 @property(nonatomic,strong) UILabel *ngTitle;

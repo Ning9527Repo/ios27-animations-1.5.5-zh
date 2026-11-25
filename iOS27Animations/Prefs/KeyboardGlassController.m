@@ -10,7 +10,7 @@
 - (NSBundle *)bundle {
     return [NSBundle bundleForClass:CG27KeyboardGlassController.class];
 }
-- (void)setSpecifiers:(NSArray *)rows {
+- (void)setSpecifiers:(NSMutableArray *)rows {
     if (self.ngLoading) { [super setSpecifiers:rows]; return; }
     self.ngLoading=YES;
     @try {
@@ -24,11 +24,11 @@
         @try {
             NSBundle *bundle = [self bundle];
             NSString *path = [bundle pathForResource:@"KeyboardGlass" ofType:@"plist"];
-            NSArray *rows;
+            NSMutableArray *rows;
             if ([self respondsToSelector:@selector(loadSpecifiersFromPlistName:target:bundle:)]) {
-                rows = [self loadSpecifiersFromPlistName:@"KeyboardGlass" target:self bundle:bundle];
+                rows = [[self loadSpecifiersFromPlistName:@"KeyboardGlass" target:self bundle:bundle] mutableCopy];
             } else {
-                rows = [self loadSpecifiersFromPlistName:@"KeyboardGlass" target:self];
+                rows = [[self loadSpecifiersFromPlistName:@"KeyboardGlass" target:self] mutableCopy];
             }
             // Keep the inherited specifier/group bookkeeping synchronized with
             // our cache through the framework setter, without guessing ivar offsets.

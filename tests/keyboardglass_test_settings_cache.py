@@ -6,14 +6,14 @@ import subprocess,tempfile
 P=Path(__file__).resolve().parents[1]
 s=(P/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text()
 s=s.replace('CG27KeyboardGlassController','NGCacheTest')
-getter=s[s.index('- (void)setSpecifiers:(NSArray *)rows {'):s.index('- (id)readPreferenceValue:(PSSpecifier *)specifier {')]
+getter=s[s.index('- (void)setSpecifiers:(NSMutableArray *)rows {'):s.index('- (id)readPreferenceValue:(PSSpecifier *)specifier {')]
 prefix=r'''#import <Foundation/Foundation.h>
 @interface PSListController : NSObject
 @property(nonatomic,strong) NSArray *stored;
-@property(nonatomic,strong) NSArray *rows;
+@property(nonatomic,strong) NSMutableArray *rows;
 @property(nonatomic,assign) NSInteger loads;
 - (NSArray *)specifiers;
-- (void)setSpecifiers:(NSArray *)rows;
+- (void)setSpecifiers:(NSMutableArray *)rows;
 - (void)reloadSpecifiers;
 - (NSInteger)numberOfGroups;
 - (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target;
@@ -21,7 +21,7 @@ prefix=r'''#import <Foundation/Foundation.h>
 @end
 @implementation PSListController
 - (NSArray *)specifiers { return self.stored; }
-- (void)setSpecifiers:(NSArray *)rows {
+- (void)setSpecifiers:(NSMutableArray *)rows {
  self.stored=rows;
  NSCAssert([self specifiers]==rows,@"setter reentry lost cache");
 }
@@ -34,7 +34,7 @@ prefix=r'''#import <Foundation/Foundation.h>
 - (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target bundle:(NSBundle *)bundle { self.loads++;return self.rows; }
 @end
 @interface NGCacheTest : PSListController
-@property(nonatomic,strong) NSArray *ngSpecifiers;
+@property(nonatomic,strong) NSMutableArray *ngSpecifiers;
 @property(nonatomic,assign) BOOL ngLoading;
 - (NSBundle *)bundle;
 - (void)ngRebuildSpecifierState;

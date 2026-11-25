@@ -2,7 +2,7 @@
 
 @interface CG27KeyboardGlassController : CG27PageController
 - (id)readPreferenceValue:(PSSpecifier *)specifier;
-@property(nonatomic, strong) NSArray *ngSpecifiers;
+@property(nonatomic, strong) NSMutableArray *ngSpecifiers;
 @property(nonatomic, assign) BOOL ngLoading;
 @property(nonatomic, strong) id ngActiveObserver;
 - (void)ngRebuildSpecifierState;
