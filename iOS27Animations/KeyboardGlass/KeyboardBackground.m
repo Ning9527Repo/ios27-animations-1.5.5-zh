@@ -312,7 +312,6 @@ static void NGInstallBackdropHook(void) {
         hook(cls,sel,(IMP)NGLayout,(IMP *)&NGOriginalLayout);
 }
 __attribute__((constructor)) static void NGInstall(void) {
-    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Preferences"]) return;
     @autoreleasepool {
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL,
             NGPreferenceChanged, (__bridge CFStringRef)NGChanged, NULL, CFNotificationSuspensionBehaviorCoalesce);

@@ -11,11 +11,6 @@ baseline = json.loads((root/'tests/qq-baseline.json').read_text())
 def digest(text): return hashlib.sha256(text.encode()).hexdigest()
 for rel, sha in baseline['unchanged'].items():
     data=(root/rel).read_bytes()
-    if rel=='iOS27Animations/SwitchFeature/src/Tweak.m':
-        text=data.decode()
-        text=text.replace('if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.Preferences"] ||\n        [NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.bazik1337.ios2627anims.prefs"]) return;',
-                          'if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.bazik1337.ios2627anims.prefs"]) return;')
-        data=text.encode()
     assert hashlib.sha256(data).hexdigest() == sha, ('baseline changed', rel)
 # Remove ONLY the new early QQ returns. Non-QQ/Clock runtime is then byte-identical.
 core = (f/'src/NGSwitch.m').read_text()

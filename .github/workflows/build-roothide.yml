@@ -1,4 +1,4 @@
-name: iOS 27 Animations + KeyboardGlass + Theseus Switch 0.2 RootHide
+name: iOS 27 Animations + Keyboard Glass + Theseus Switch 0.3 RootHide
 on:
   workflow_dispatch:
   repository_dispatch:
@@ -56,7 +56,7 @@ jobs:
           cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/vendor-manifest.json"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
-          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.2' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
+          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.3' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify final deb and code signatures
         run: |
           for PACKAGE in iOS27Animations/packages/*.deb; do
@@ -69,7 +69,7 @@ jobs:
       - name: Upload package and verification
         uses: actions/upload-artifact@v4
         with:
-          name: iOS27Animations-0.2-arm64e
+          name: iOS27Animations-0.3-arm64e
           path: |
             iOS27Animations/packages/*.deb
             iOS27Animations/packages/*.json

@@ -20,21 +20,23 @@ for page in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGla
     keys={item.get('label') for item in data['items'] if item.get('label')}
     keys.add(data['title'])
     assert not (keys-set(translations)-{'@bazik1337','GitHub'}),keys-set(translations)
+    if page=='Root': assert translations.get('Keyboard Glass')=='键盘仿玻璃'
     assert all(translations.values())
     print(page,len(data['items']),len(translations))
 for p in root.rglob('*.plist'):
     if p.name in ('iOS2627Anims.plist','iOS27AnimsReborn.plist'):
         assert 'com.apple.springboard' in p.read_text()
+        if p.name=='iOS2627Anims.plist': assert 'com.apple.Preferences' in p.read_text()
     else:
         plistlib.loads(p.read_bytes())
 entry=plistlib.loads((prefs/'layout/Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').read_bytes())['entry']
 assert entry['label']=='iOS 27 动画' and entry['icon']=='icon.png'
 main=plistlib.loads((prefs/'Resources/Root.plist').read_bytes())['items']
 links=[x for x in main if x.get('cell')=='PSLinkCell']
-assert sum(x.get('label')=='Keyboard Glass Mock Effect' and x.get('plist')=='KeyboardGlass' for x in links)==1
+assert sum(x.get('label')=='Keyboard Glass' and x.get('plist')=='KeyboardGlass' for x in links)==1
 assert not (prefs/'KeyboardGlassEntry.plist').exists()
 control=dict(line.split(': ',1) for line in (original/'control').read_text().splitlines() if ': ' in line)
-assert control['Version']=='0.2' and control['Architecture']=='iphoneos-arm64e'
+assert control['Version']=='0.3' and control['Architecture']=='iphoneos-arm64e'
 assert control['Package']=='com.ning.ios2627anims'
 assert control['Name']=='iOS 27 动画' and 'Icon' not in control
 assert control['Author']=='Ning' and control['Maintainer']=='Ning'

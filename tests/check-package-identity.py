@@ -12,18 +12,18 @@ control = dict(line.split(': ', 1) for line in
 assert control['Package'] == NEW
 assert control['Name'] == 'iOS 27 动画'
 assert control['Author'] == control['Maintainer'] == 'Ning'
-assert control['Version'] == '0.2' and control['Architecture'] == 'iphoneos-arm64e'
+assert control['Version'] == '0.3' and control['Architecture'] == 'iphoneos-arm64e'
 assert 'firmware (>= 16.0)' in control['Depends']
 assert 'com.ning.keyboardglass' in control['Conflicts'].split(', ')
 assert 'com.ning.keyboardglass' in control['Replaces'].split(', ')
 assert 'firmware (>= 16.0)' in control['Depends']
-assert control['Version']=='0.2'
+assert control['Version']=='0.3'
 assert 'Icon' not in control
 for field in ('Conflicts', 'Replaces'):
     entries = [x.strip() for x in control[field].split(',')]
     assert OLD in entries and NEW not in entries, (field, entries)
 expected = f"{control['Package']}_{control['Version']}_{control['Architecture']}.deb"
-assert expected == 'com.ning.ios2627anims_0.2_iphoneos-arm64e.deb'
+assert expected == 'com.ning.ios2627anims_0.3_iphoneos-arm64e.deb'
 # Do not blindly replace the legacy preferences namespace: existing settings
 # must remain readable by the unchanged Settings and runtime implementation.
 res = ROOT / 'iOS27Animations/Prefs/Resources'

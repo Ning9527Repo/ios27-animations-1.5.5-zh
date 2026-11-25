@@ -96,7 +96,7 @@
 			<key>isController</key>
 			<true/>
 			<key>label</key>
-			<string>Keyboard Glass Mock Effect</string>
+			<string>Keyboard Glass</string>
 			<key>plist</key>
 			<string>KeyboardGlass</string>
 		</dict>

@@ -15,8 +15,15 @@ for f in ('src/NGSwitch.m','src/NGResources.m','src/NGSwitchPreferences.m','src/
     assert f in mk
 assert 'find $(SWITCH_DIR)/Vendor/Theseus/Sources/Theseus' in mk
 assert 'iOS2627Anims-Bridging-Header.h' in mk or (root/'iOS27Animations/iOS2627Anims-Bridging-Header.h').is_file()
+hooks=(feature/'src/Tweak.m').read_text()
 filter_text=(root/'iOS27Animations/iOS2627Anims.plist').read_text()
-assert set(re.findall(r'"(com\.apple\.[^"]+)"',filter_text))=={'com.apple.springboard','com.apple.UIKit'}
+assert set(re.findall(r'"(com\.apple\.[^"]+)"',filter_text))=={'com.apple.springboard','com.apple.UIKit','com.apple.Preferences'}
+switch_ctor=hooks[hooks.index('__attribute__((constructor)) static void NGInitialize(void)'):]
+assert 'com.apple.Preferences' not in switch_ctor
+assert 'com.bazik1337.ios2627anims.prefs' in switch_ctor
+keyboard=(root/'iOS27Animations/KeyboardGlass/KeyboardBackground.m').read_text()
+keyboard_ctor=keyboard[keyboard.index('__attribute__((constructor)) static void NGInstall(void)'):]
+assert 'com.apple.Preferences' not in keyboard_ctor
 main=(root/'iOS27Animations/Tweak.x').read_text()
 assert '%ctor {\n    if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) return;' in main
 hooks=(feature/'src/Tweak.m').read_text(); bridge=(feature/'src/Bridge.h').read_text(); sw=(feature/'src/NGSwitch.m').read_text()

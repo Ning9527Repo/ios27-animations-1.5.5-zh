@@ -9,14 +9,14 @@ main=pages['Root']['items']
 assert main[:2]==fixture['root_prefix'], 'master enable changed'
 assert main[2]==fixture['switch_control']
 kg=main[10]
-assert kg=={'cell':'PSLinkCell','detail':'CG27KeyboardGlassController','isController':True,'label':'Keyboard Glass Mock Effect','plist':'KeyboardGlass'}
+assert kg=={'cell':'PSLinkCell','detail':'CG27KeyboardGlassController','isController':True,'label':'Keyboard Glass','plist':'KeyboardGlass'}
 assert main[11:]==[{'cell':'PSGroupCell'}, {'action':'resetSettings','cell':'PSButtonCell','label':'Reset settings'}, {'action':'respring','cell':'PSButtonCell','label':'Respring'}]
 links=[x for x in main if x.get('cell')=='PSLinkCell']
-assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Notification Center','NotificationCenter'),('Advanced','Advanced'),('Keyboard Glass Mock Effect','KeyboardGlass')]
+assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Notification Center','NotificationCenter'),('Advanced','Advanced'),('Keyboard Glass','KeyboardGlass')]
 for link in links[:3]:
     assert link['detail']=='CG27PageController' and link['isController'] is True
 assert {x['key'] for x in main if 'key' in x}=={'Enabled','LiquidSwitchEnabled'}
-assert sum(x.get('label')=='Keyboard Glass Mock Effect' and x.get('plist')=='KeyboardGlass' for x in links)==1
+assert sum(x.get('label')=='Keyboard Glass' and x.get('plist')=='KeyboardGlass' for x in links)==1
 assert sum(bool(x.get('entry')) for x in main)==0
 assert (root/'iOS27Animations/Makefile').read_text().count('KeyboardGlass/KeyboardBackground.m')==1
 assert 'KeyboardGlassController.m' in (root/'iOS27Animations/Prefs/Makefile').read_text()
@@ -41,6 +41,9 @@ kgsource=(root/'iOS27Animations/KeyboardGlass/KeyboardBackground.m').read_text()
 mk=(root/'iOS27Animations/Makefile').read_text()
 assert 'KeyboardGlass/KeyboardBackground.m' in mk
 assert 'NGInstallCandidateHooks();' in kgsource and 'NGInstallBackdropHook();' in kgsource
+assert 'com.apple.Preferences' not in kgsource[kgsource.index('__attribute__((constructor)) static void NGInstall(void)'):]
+filter_text=(root/'iOS27Animations/iOS2627Anims.plist').read_text()
+assert 'com.apple.Preferences' in filter_text
 assert '[NSBundle bundleForClass:CG27KeyboardGlassController.class]' in (root/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text()
 assert 'loadSpecifiersFromPlistName:@"KeyboardGlass"' in (root/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text()
 assert not (root/'iOS27Animations/Prefs/Resources/KeyboardGlassEntry.plist').exists()

@@ -10,6 +10,6 @@ source=root/'iOS27Animations/SwitchFeature/Vendor/Theseus/Sources/Theseus/Shader
 air=out/'TheseusShaders.air'
 subprocess.run(['xcrun','--sdk','iphoneos','metal','-target','air64-apple-ios15.0','-isysroot',sdk,'-std=ios-metal2.4','-O2','-I',str(source.parent),'-c',str(source),'-o',str(air)],check=True)
 subprocess.run(['xcrun','--sdk','iphoneos','metallib',str(air),'-o',str(bundle/'default.metallib')],check=True)
-info={'CFBundleIdentifier':'com.bazik1337.ios2627anims.switchresources','CFBundleName':'TheseusSwitchResources','CFBundlePackageType':'BNDL','CFBundleVersion':'0.2'}
+info={'CFBundleIdentifier':'com.bazik1337.ios2627anims.switchresources','CFBundleName':'TheseusSwitchResources','CFBundlePackageType':'BNDL','CFBundleVersion':'0.3'}
 (bundle/'Info.plist').write_bytes(plistlib.dumps(info,fmt=plistlib.FMT_XML,sort_keys=True))
 print(f'compiled integrated resource: {bundle}')
