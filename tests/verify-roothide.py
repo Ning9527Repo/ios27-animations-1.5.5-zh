@@ -37,7 +37,8 @@ with tempfile.TemporaryDirectory() as tmp:
     for lang in ('en','ru','zh-Hans'):
         assert (d/f'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/{lang}.lproj/KeyboardGlass.strings').is_file()
     for profile_name in ('iOS27Animations_SwitchReadConfig.plist','KeyboardGlass_ReadConfig.plist'):
-        member=next(x for x in tar.getmembers() if x.name.lstrip('./')=='Library/libSandy/'+profile_name)
+        member=members.get('Library/libSandy/'+profile_name)
+        assert member is not None,profile_name
         assert member.uid==member.gid==0 and member.mode==0o644,(member.name,member.uid,member.gid,member.mode)
     files=[x.relative_to(d).as_posix() for x in d.rglob('*') if x.is_file()]
     assert not any(x.startswith('var/jb/') for x in files),files
