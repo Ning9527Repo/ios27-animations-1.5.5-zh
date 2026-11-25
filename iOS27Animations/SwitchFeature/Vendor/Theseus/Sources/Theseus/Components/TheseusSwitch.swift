@@ -1,6 +1,16 @@
 import UIKit
 import QuartzCore
 
+// Identifies one native switch at one reusable row. A new row may reuse all
+// the same values, so value equality alone is not an interaction identity.
+struct HostedSwitchIdentity: Equatable {
+    let source: ObjectIdentifier
+    let parent: ObjectIdentifier?
+    let row: ObjectIdentifier?
+    let list: ObjectIdentifier?
+    let path: IndexPath?
+}
+
 /// A Liquid Glass-styled toggle switch with smooth thumb animations.
 public class TheseusSwitch: UIControl {
 
@@ -94,6 +104,18 @@ public class TheseusSwitch: UIControl {
     // Opt in only from the Clock integration. Capture the nearest reusable
     // row rather than traversing the entire alarm list. Other apps stay unchanged.
     var isolatesClockCapture = false
+    // The injected replacement may live inside its original UISwitch. Keep
+    // its temporary optics in that same subtree, not above the whole page.
+    var confinesHostedGlass = false
+    var hostedInteractionIsValid: (() -> Bool)?
+    var hostedIdentity: (() -> HostedSwitchIdentity?)?
+    private var pressHostIdentity: HostedSwitchIdentity?
+    private var hostedPressIsCurrent: Bool {
+        guard confinesHostedGlass else { return true }
+        guard hostedInteractionIsValid?() != false else { return false }
+        guard let expected = pressHostIdentity else { return false }
+        return hostedIdentity?() == expected
+    }
     var clockTouchActive: Bool { isPressing }
     private let contentView = UIView()
     private let trackLayer = SimpleLayer()
@@ -448,6 +470,7 @@ public class TheseusSwitch: UIControl {
             // guaranteed private subtree. Its track remains in the capture.
             return superview ?? self
         }
+        if confinesHostedGlass { return self }
         return pageSourceView
     }
 
@@ -477,10 +500,9 @@ public class TheseusSwitch: UIControl {
     }
 
     private var theseusContainer: UIView? {
-        // Clock: the pressed glass and shadow must live and die with this
-        // particular switch, not in a shared page-level overlay container.
-        // Other apps retain the original unclipped page-level glass host.
-        if isolatesClockCapture { return self }
+        // Clock and source-hosted optics live and die with the owning switch.
+        // Standalone library clients retain the original page-level host.
+        if isolatesClockCapture || confinesHostedGlass { return self }
         return pageSourceView?.superview
     }
 
@@ -770,6 +792,10 @@ public class TheseusSwitch: UIControl {
     }
 
     private func stepGlass(by interval: TimeInterval) {
+        if !hostedPressIsCurrent {
+            synchronizeNativeValue(_isOn, force: true)
+            return
+        }
         let now = CACurrentMediaTime()
         if let begins = pressBeginsAt, now >= begins {
             pressBeginsAt = nil
@@ -988,6 +1014,10 @@ public class TheseusSwitch: UIControl {
     }
 
     private func toggleFromUserInteraction() {
+        if confinesHostedGlass {
+            pressHostIdentity = hostedIdentity?()
+            guard hostedPressIsCurrent else { return }
+        }
         let newValue = !_isOn
         _isOn = newValue
         visuallyOn = newValue
@@ -997,7 +1027,11 @@ public class TheseusSwitch: UIControl {
         onValueChanged?(newValue)
         sendActions(for: .valueChanged)
         // A synchronous host callback can already have recycled this cell.
-        guard !isolatesClockCapture || interactionGeneration == releaseGeneration else { return }
+        guard interactionGeneration == releaseGeneration else { return }
+        guard hostedPressIsCurrent else {
+            synchronizeNativeValue(_isOn, force: true)
+            return
+        }
 
         let finalThumbFrame = thumbFrame(x: newValue ? thumbOnX : thumbOffX)
         setThumbX(finalThumbFrame.origin.x, animated: !prefersReducedMotion)
@@ -1039,6 +1073,10 @@ public class TheseusSwitch: UIControl {
 
     private func pressBegan(at location: CGPoint) {
         guard isEnabled else { return }
+        if confinesHostedGlass {
+            pressHostIdentity = hostedIdentity?()
+            guard hostedPressIsCurrent else { return }
+        }
         traceClockInteraction("pressBegan")
         // A reused cell can be in a different host while staying in the same window.
         if let glass = theseusView,
@@ -1095,6 +1133,10 @@ public class TheseusSwitch: UIControl {
 
     private func finishPress(cancelled: Bool) {
         guard isPressing else { return }
+        guard hostedPressIsCurrent else {
+            synchronizeNativeValue(_isOn, force: true)
+            return
+        }
         traceClockInteraction(cancelled ? "pressCancelled" : "pressEnded")
         isPressing = false
 
@@ -1112,7 +1154,11 @@ public class TheseusSwitch: UIControl {
             sendActions(for: .valueChanged)
         }
         // Never start a new release on a cell that was reset during commit.
-        guard !isolatesClockCapture || interactionGeneration == releaseGeneration else { return }
+        guard interactionGeneration == releaseGeneration else { return }
+        guard hostedPressIsCurrent else {
+            synchronizeNativeValue(_isOn, force: true)
+            return
+        }
 
         animateRelease(to: newValue, cancelled: cancelled)
     }

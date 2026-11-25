@@ -6,7 +6,9 @@ In 1.5.7+ningzh1, Settings and SpringBoard publish the existing `LiquidSwitchEna
 
 Every UIKit host reads the same validated snapshot instead of querying a foreign CFPreferences domain. The package depends on `com.opa334.libsandy` and installs one profile granting only read access to that exact configuration file. The RootHide profile uses `/rootfs/` to address the real mobile shared path. Invalid or unreadable updates retain the last valid ON/OFF state; only a validated OFF removes overlays. Foreground and bounded startup recovery re-read configuration. Metadata-only per-host diagnostics are written to `Library/Caches/iOS27Animations-switch.log`.
 
-The original Clock reuse hooks, switch geometry, animations, renderer and vendored Theseus sources are preserved. Animation Logos hooks remain SpringBoard-only. Foundation regression tests validate the production snapshot helpers and apply function, but do not establish device injection or visible rendering.
+In 1.5.8+ningzh1, non-Clock replacements live inside the owning native UISwitch. Only its native drawing sublayers receive reversible empty masks; the host's alpha, position, hide/show and reuse lifecycle remain authoritative. A UISwitch-only hit-test adapter forwards touch to that switch's replacement. Pressed glass is confined to its owner and captures that track, avoiding page-level floating lenses. A press ticket includes source, parent, reusable cell, list and index path; stale commits/releases are cancelled after reuse or host rejection.
+
+Clock keeps its existing sibling mounting, row reset and replay paths. Animation Logos hooks remain SpringBoard-only. Host-side tests exercise extracted production snapshot, binding, mask, geometry, finishPress and identity code on Foundation/CALayer/Swift stand-ins; these do not establish UIKit/QQ device behavior. Optical material parameters, original motion constants, shaders and renderer are unchanged.
 
 The feature's Metal shader is compiled by `tools/prepare-switch-resources.py` into `Library/Application Support/iOS27Animations/TheseusSwitchResources.bundle`; the resource resolver anchors to the single `iOS2627Anims.dylib`.
 

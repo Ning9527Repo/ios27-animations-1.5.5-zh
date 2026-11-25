@@ -1,8 +1,8 @@
 {
   "Vendor/Theseus/Sources/Theseus/Components/TheseusSwitch.swift": {
     "upstream_sha256": "5349ffd26f8dd122e70d4158f5bd432d07190564a7c5998323d0db1217d48e65",
-    "patched_sha256": "b485afc97c85ddf582c1f7ce2bf409aa486d22342305d1f786cd525a8bf75dc0",
-    "reason": "Keep Clock reuse reset and replay identity guards; start recovery flight immediately and move fallback thumb with the spring until first frame."
+    "patched_sha256": "6eea285d8c083338c3961be181ae78b434171cddc4cc8cea19d1705bd0c05778",
+    "reason": "Preserve Clock reuse/replay; confine injected non-Clock optics to its native switch, bind press identity to source/row/path, reject stale release after host reconfiguration."
   },
   "Vendor/Theseus/Sources/Theseus/Rendering/TheseusRenderer.swift": {
     "upstream_sha256": "cba7c8ff8ef15c2db1b2230980f0bd07a7e9eda45cf482765cd7eb23a7a505fa",

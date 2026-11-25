@@ -1,5 +1,12 @@
 # История изменений
 
+## 1.5.8+ningzh1 — switch ownership and reusable-list optics
+
+- Non-Clock replacements now live inside their native UISwitch instead of a sibling used by host layout. Native alpha is retained; native drawing layers are masked and conditionally restored on detach.
+- Pressed glass samples its own track and stays inside that switch. Gestures bind to source/parent/cell/list/path and cannot commit or restart release after reuse, host rejection, hiding or detachment.
+- Added a UISwitch-only hit-test adapter with exact CGPoint ABI validation. Clock reuse/replay and application/notification animations retain their existing paths.
+- Regression checks execute extracted production binding/mask/geometry and Swift finishPress/identity code on macOS stand-ins. Visible behavior still requires real-device testing.
+
 ## 1.5.7+ningzh1 — integrated liquid switch configuration fix
 
 - Settings and SpringBoard publish the existing saved `LiquidSwitchEnabled` value to one shared snapshot; sandboxed apps no longer query a foreign preference domain.
