@@ -2,6 +2,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
+#include <sys/socket.h>
 
 // UIKit is unavailable in the macOS host process. These stand-ins expose only
 // the native control state consumed by the extracted production functions.
@@ -56,7 +57,7 @@ static void NGClockScheduleReplay(UITableView *table) { (void)table; }
 /* PRODUCTION_GEOMETRY */
 static int checks;
 #define REQUIRE(x) do { checks++; if(!(x)){ NSLog(@"FAIL line %d: %s",__LINE__,#x);abort();} }while(0)
-static NGSwitchBinding *bind(UISwitch *source) {
+static NGSwitchBinding *NGTestCreateBinding(UISwitch *source) {
     NGSwitchBinding *b=[NGSwitchBinding new];b.source=source;b.sourceHosted=YES;b.overlay=[UIView new];
     b.overlay.superview=source;[source.layer addSublayer:b.overlay.layer];
     objc_setAssociatedObject(source,&kNGBindingKey,b,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
@@ -65,7 +66,7 @@ static NGSwitchBinding *bind(UISwitch *source) {
 int main(void) { @autoreleasepool {
     NSMutableArray<UISwitch *> *sources=[NSMutableArray array];
     NSMutableArray<NGSwitchBinding *> *bindings=[NSMutableArray array];
-    for(int i=0;i<4;i++){ UISwitch *s=[UISwitch new];[sources addObject:s];[bindings addObject:bind(s)]; }
+    for(int i=0;i<4;i++){ UISwitch *s=[UISwitch new];[sources addObject:s];[bindings addObject:NGTestCreateBinding(s)]; }
     for(int tap=0;tap<100;tap++) [bindings.lastObject commit:!sources.lastObject.isOn];
     REQUIRE(sources.lastObject.events==100 && syncs==100);
     for(int i=0;i<3;i++) REQUIRE(!sources[i].isOn && sources[i].events==0);
