@@ -25,8 +25,11 @@ with tempfile.TemporaryDirectory() as tmp:
     app=prefs/'iOS2627AnimsPrefs'
     assert lib.is_file() and app.is_file()
     assert (d/'Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').is_file()
-    for page in ('Root','Advanced'):
+    for page in ('Root','AppAnimations','NotificationCenter','Advanced'):
         assert (prefs/'zh-Hans.lproj'/(page+'.strings')).is_file()
+    assert (prefs/'AppAnimations.plist').is_file() and (prefs/'NotificationCenter.plist').is_file()
+    for page in ('AppAnimations','NotificationCenter','Advanced'):
+        assert sum(x.get('cell')=='PSGroupCell' for x in plistlib.loads((prefs/'Resources'/(page+'.plist')).read_bytes())['items'])==1
     assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='1.5.5'
     out=[]
     for f in (lib,app):

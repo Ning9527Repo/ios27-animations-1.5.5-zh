@@ -10,7 +10,7 @@ assert '-F$(THEOS_PROJECT_DIR)/Prefs/linker' in (prefs/'Makefile').read_text()
 stub=prefs/'linker/Preferences.framework/Preferences.tbd'
 assert 'PSListController._specifiers' in stub.read_text()
 assert '/System/Library/PrivateFrameworks/Preferences.framework/Preferences' in stub.read_text()
-for page in ('Root','Advanced'):
+for page in ('Root','AppAnimations','NotificationCenter','Advanced'):
     r=prefs/'Resources'
     data=plistlib.loads((r/(page+'.plist')).read_bytes())
     s=(r/'zh-Hans.lproj'/(page+'.strings')).read_text()

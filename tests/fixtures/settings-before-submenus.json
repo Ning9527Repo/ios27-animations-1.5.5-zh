@@ -1,0 +1,171 @@
+{
+  "baseline_commit": "5c9268432c06e461edc4c31457078f38eff954db",
+  "controls": {
+    "Enabled": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSwitchCell",
+      "default": false,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "Enabled",
+      "label": "Enabled"
+    },
+    "AppAnimations": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSwitchCell",
+      "default": true,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "AppAnimations",
+      "label": "iOS 27 animation"
+    },
+    "OpenSpeed": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSliderCell",
+      "default": 1.0,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "OpenSpeed",
+      "max": 2.0,
+      "min": 0.5,
+      "showValue": true
+    },
+    "CloseSpeed": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSliderCell",
+      "default": 1.0,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "CloseSpeed",
+      "max": 2.0,
+      "min": 0.5,
+      "showValue": true
+    },
+    "IconFlyIn": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSwitchCell",
+      "default": true,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "IconFlyIn",
+      "label": "Icons fly in"
+    },
+    "ClearSheet": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSwitchCell",
+      "default": true,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "ClearSheet",
+      "label": "No blur behind"
+    },
+    "Intensity": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSliderCell",
+      "default": 1.0,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "Intensity",
+      "max": 2.0,
+      "min": 0.0,
+      "showValue": true
+    },
+    "GestureBounce": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSwitchCell",
+      "default": true,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "GestureBounce",
+      "label": "Bounce into icon"
+    },
+    "FlyStrength": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSliderCell",
+      "default": 1.0,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "FlyStrength",
+      "max": 3.0,
+      "min": 0.0,
+      "showValue": true
+    },
+    "GlobalSlow": {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSliderCell",
+      "default": 1.0,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "GlobalSlow",
+      "max": 5.0,
+      "min": 1.0,
+      "showValue": true
+    }
+  },
+  "root_prefix": [
+    {
+      "cell": "PSGroupCell"
+    },
+    {
+      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "cell": "PSSwitchCell",
+      "default": false,
+      "defaults": "com.bazik1337.ios2627anims",
+      "key": "Enabled",
+      "label": "Enabled"
+    }
+  ],
+  "root_tail": [
+    {
+      "cell": "PSGroupCell"
+    },
+    {
+      "cell": "PSLinkCell",
+      "detail": "CG27PageController",
+      "iconSymbol": "slider.horizontal.3",
+      "isController": true,
+      "label": "Advanced",
+      "plist": "Advanced"
+    },
+    {
+      "cell": "PSGroupCell"
+    },
+    {
+      "action": "resetSettings",
+      "cell": "PSButtonCell",
+      "iconSymbol": "arrow.counterclockwise",
+      "label": "Reset settings"
+    },
+    {
+      "action": "respring",
+      "cell": "PSButtonCell",
+      "iconSymbol": "arrow.clockwise",
+      "label": "Respring"
+    },
+    {
+      "cell": "PSGroupCell",
+      "label": "Author"
+    },
+    {
+      "action": "openTelegram",
+      "cell": "PSButtonCell",
+      "iconSymbol": "person.crop.circle",
+      "label": "@bazik1337"
+    },
+    {
+      "action": "openChannel",
+      "cell": "PSButtonCell",
+      "iconSymbol": "paperplane",
+      "label": "Telegram channel"
+    },
+    {
+      "action": "openGitHub",
+      "cell": "PSButtonCell",
+      "iconSymbol": "chevron.left.forwardslash.chevron.right",
+      "label": "GitHub"
+    },
+    {
+      "cell": "PSGroupCell",
+      "footerText": "version"
+    }
+  ],
+  "root_title": "iOS 27 Animations",
+  "immutable": {
+    "iOS27Animations/Tweak.x": "7d2ba8337c7bb16fba76be762eb2299fa3de191e14b2e251585b7adca41bfe1d",
+    "iOS27Animations/GenieEngine.h": "2daf7d64bc342585333d6f12dffc5c341df490273a21ef2ca77dfa3093b8dc85",
+    "iOS27Animations/SpringMath.h": "c68ac41e200689a782da4d319a6f83f6f694c74ff97229c3176f5c5dd4e199b8",
+    "shared/AfterLaunch.h": "53c24552bd014f5564f313c9ddfa1b6f8db594aebb678b3f716b495b25e82b71",
+    "shared/HookCompatibility.h": "405d64bd6957ffbbfcb0ced25ed376bc5ffd58e5f6cc0ad42badfb1156d10b35",
+    "iOS27Animations/Prefs/CG27RootListController.m": "aa68cf837a77a672d91c9f05e8c6e69322876a228795e679cc47a557bbf8edf6"
+  }
+}

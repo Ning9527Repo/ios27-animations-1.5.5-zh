@@ -10,7 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Validate complete source and Chinese strings
-        run: python3 tests/check-localization.py
+        run: |
+          python3 tests/check-localization.py
+          python3 tests/check-settings-pages.py
       - name: Install native RootHide toolchain
         run: |
           brew install dpkg ldid xz

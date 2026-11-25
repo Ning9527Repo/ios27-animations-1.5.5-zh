@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>items</key>
+	<array>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>PostNotification</key>
+			<string>com.bazik1337.ios2627anims/changed</string>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.bazik1337.ios2627anims</string>
+			<key>key</key>
+			<string>AppAnimations</string>
+			<key>label</key>
+			<string>iOS 27 animation</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSStaticTextCell</string>
+			<key>label</key>
+			<string>Opening speed</string>
+		</dict>
+		<dict>
+			<key>PostNotification</key>
+			<string>com.bazik1337.ios2627anims/changed</string>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>default</key>
+			<real>1.0</real>
+			<key>defaults</key>
+			<string>com.bazik1337.ios2627anims</string>
+			<key>key</key>
+			<string>OpenSpeed</string>
+			<key>max</key>
+			<real>2.0</real>
+			<key>min</key>
+			<real>0.5</real>
+			<key>showValue</key>
+			<true/>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSStaticTextCell</string>
+			<key>label</key>
+			<string>Closing speed</string>
+		</dict>
+		<dict>
+			<key>PostNotification</key>
+			<string>com.bazik1337.ios2627anims/changed</string>
+			<key>cell</key>
+			<string>PSSliderCell</string>
+			<key>default</key>
+			<real>1.0</real>
+			<key>defaults</key>
+			<string>com.bazik1337.ios2627anims</string>
+			<key>key</key>
+			<string>CloseSpeed</string>
+			<key>max</key>
+			<real>2.0</real>
+			<key>min</key>
+			<real>0.5</real>
+			<key>showValue</key>
+			<true/>
+		</dict>
+	</array>
+	<key>title</key>
+	<string>ios27动画</string>
+</dict>
+</plist>
