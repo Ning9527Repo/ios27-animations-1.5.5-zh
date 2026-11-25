@@ -48,6 +48,10 @@ jobs:
           make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='1.5.7+ningzh1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify final deb and code signatures
         run: |
+          for PACKAGE in iOS27Animations/packages/*.deb; do
+            python3 tools/normalize-package-ownership.py "$PACKAGE" "$PACKAGE.normalized" > "$PACKAGE.ownership.json"
+            mv "$PACKAGE.normalized" "$PACKAGE"
+          done
           python3 tests/verify-roothide.py iOS27Animations/packages
           python3 tests/check-arm64e-metadata.py iOS27Animations/packages/*.deb
           python3 tests/check-code-pages.py iOS27Animations/packages/*.deb

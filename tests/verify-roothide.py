@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import pathlib,sys,tempfile,subprocess,struct,json,hashlib,plistlib
+import pathlib,sys,tempfile,subprocess,struct,json,hashlib,plistlib,tarfile,io
 root=pathlib.Path(__file__).resolve().parents[1]
 pkgs=pathlib.Path(sys.argv[1]); debs=list(pkgs.glob('*.deb'))
 assert len(debs)==1,debs
@@ -22,6 +22,10 @@ with tempfile.TemporaryDirectory() as tmp:
     profile=d/'Library/libSandy/iOS27Animations_SwitchReadConfig.plist'
     assert plistlib.loads(profile.read_bytes())=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
     assert profile.stat().st_mode & 0o777 == 0o644
+    archive=subprocess.check_output(['dpkg-deb','--fsys-tarfile',str(p)])
+    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+        member=next(x for x in tar.getmembers() if x.name.lstrip('./')=='Library/libSandy/iOS27Animations_SwitchReadConfig.plist')
+        assert member.uid==member.gid==0 and member.mode==0o644,(member.uid,member.gid,member.mode)
     files=[x.relative_to(d).as_posix() for x in d.rglob('*') if x.is_file()]
     assert not any(x.startswith('var/jb/') for x in files),files
     lib=d/'Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib'
