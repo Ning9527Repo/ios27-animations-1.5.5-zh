@@ -12,6 +12,7 @@ jobs:
       - name: Validate complete source and Chinese strings
         run: |
           python3 tests/check-localization.py
+          python3 tests/check-package-identity.py
           python3 tests/check-settings-pages.py
           python3 tests/check-settings-appearance.py
           python3 tests/check-liquid-switch-integration.py
@@ -40,11 +41,11 @@ jobs:
           test -n "$STAGE" && test -n "$DYLIB"
           STAGE_ROOT="${STAGE%/Library/PreferenceBundles/iOS2627AnimsPrefs.bundle}"
           RESOURCE_ROOT="$STAGE_ROOT/Library/Application Support/iOS27Animations"
-          mkdir -p "$RESOURCE_ROOT" "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus"
+          mkdir -p "$RESOURCE_ROOT" "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus"
           cp -R "$RUNNER_TEMP/switch-resources/TheseusSwitchResources.bundle" "$RESOURCE_ROOT/"
-          cp iOS27Animations/SwitchFeature/LICENSE-Theseus "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus/LICENSE"
-          cp iOS27Animations/SwitchFeature/NOTICE-Theseus "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus/NOTICE"
-          cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus/vendor-manifest.json"
+          cp iOS27Animations/SwitchFeature/LICENSE-Theseus "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/LICENSE"
+          cp iOS27Animations/SwitchFeature/NOTICE-Theseus "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/NOTICE"
+          cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/vendor-manifest.json"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
           make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'

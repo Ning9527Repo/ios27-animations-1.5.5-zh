@@ -29,7 +29,8 @@ entry=plistlib.loads((prefs/'layout/Library/PreferenceLoader/Preferences/iOS2627
 assert entry['label']=='iOS 27 动画' and entry['icon']=='icon.png'
 control=dict(line.split(': ',1) for line in (original/'control').read_text().splitlines() if ': ' in line)
 assert control['Version']=='0.1' and control['Architecture']=='iphoneos-arm64e'
-assert control['Name']=='Ning · iOS 27 动画' and 'Icon' not in control
+assert control['Package']=='com.ning.ios2627anims'
+assert control['Name']=='iOS 27 动画' and 'Icon' not in control
 assert control['Author']=='Ning' and control['Maintainer']=='Ning'
 assert (root/'iOS27Animations/Tweak.x').is_file() and (root/'iOS27Animations/GenieEngine.h').is_file()
 assert (root/'iOS27AnimationsReborn/Tweak.x').is_file()

@@ -17,7 +17,11 @@ with tempfile.TemporaryDirectory() as tmp:
     assert fields['Version']=='0.1',fields
     assert fields['Author']=='Ning',fields
     assert fields['Maintainer']=='Ning',fields
-    assert fields['Name']=='Ning · iOS 27 动画' and 'Icon' not in fields,fields
+    assert fields['Package']=='com.ning.ios2627anims',fields
+    assert fields['Name']=='iOS 27 动画' and 'Icon' not in fields,fields
+    assert p.name==f"{fields['Package']}_{fields['Version']}_{fields['Architecture']}.deb",p.name
+    assert 'com.bazik1337.ios2627anims' in fields['Conflicts'].split(', '),fields
+    assert 'com.bazik1337.ios2627anims' in fields['Replaces'].split(', '),fields
     assert 'com.opa334.libsandy' in fields['Depends'],fields
     run('dpkg-deb','-x',str(p),str(d))
     profile=d/'Library/libSandy/iOS27Animations_SwitchReadConfig.plist'
@@ -40,7 +44,7 @@ with tempfile.TemporaryDirectory() as tmp:
     switch_rows=plistlib.loads((prefs/'Root.plist').read_bytes())['items']
     assert sum(x.get('key')=='LiquidSwitchEnabled' for x in switch_rows)==1
     for name in ('LICENSE','NOTICE','vendor-manifest.json'):
-        assert (d/'usr/share/doc/com.bazik1337.ios2627anims/Theseus'/name).is_file()
+        assert (d/'usr/share/doc/com.ning.ios2627anims/Theseus'/name).is_file()
     entry=plistlib.loads((d/'Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').read_bytes())['entry']
     assert entry['icon']=='icon.png' and entry['isController'] is True
     icon_manifest=json.loads((root/'tests/fixtures/settings-icon.json').read_text())
