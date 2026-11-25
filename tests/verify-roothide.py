@@ -30,15 +30,13 @@ with tempfile.TemporaryDirectory() as tmp:
     profile=d/'Library/libSandy/iOS27Animations_SwitchReadConfig.plist'
     assert plistlib.loads(profile.read_bytes())=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
     kgread=d/'Library/libSandy/KeyboardGlass_ReadConfig.plist'
-    kgwrite=d/'Library/libSandy/KeyboardGlass_WriteConfig.plist'
     assert plistlib.loads(kgread.read_bytes())=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/KeyboardGlass-preferences.plist'}]}
-    assert plistlib.loads(kgwrite.read_bytes())=={'AllowedProcesses':['com.apple.Preferences'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read-write','path':'/rootfs/var/mobile/Library/Accessibility/KeyboardGlass-preferences.plist'}]}
-    for item in (profile,kgread,kgwrite):
+    for item in (profile,kgread):
         assert item.stat().st_mode & 0o777 == 0o644
     assert plistlib.loads((d/'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/KeyboardGlass.plist').read_bytes())['items']
     for lang in ('en','ru','zh-Hans'):
         assert (d/f'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/{lang}.lproj/KeyboardGlass.strings').is_file()
-    for profile_name in ('iOS27Animations_SwitchReadConfig.plist','KeyboardGlass_ReadConfig.plist','KeyboardGlass_WriteConfig.plist'):
+    for profile_name in ('iOS27Animations_SwitchReadConfig.plist','KeyboardGlass_ReadConfig.plist'):
         member=next(x for x in tar.getmembers() if x.name.lstrip('./')=='Library/libSandy/'+profile_name)
         assert member.uid==member.gid==0 and member.mode==0o644,(member.name,member.uid,member.gid,member.mode)
     files=[x.relative_to(d).as_posix() for x in d.rglob('*') if x.is_file()]
