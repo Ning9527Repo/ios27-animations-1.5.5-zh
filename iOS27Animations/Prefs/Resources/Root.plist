@@ -23,6 +23,20 @@
 			<string>Enabled</string>
 		</dict>
 		<dict>
+			<key>PostNotification</key>
+			<string>com.bazik1337.ios2627anims/changed</string>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<false/>
+			<key>defaults</key>
+			<string>com.bazik1337.ios2627anims</string>
+			<key>key</key>
+			<string>LiquidSwitchEnabled</string>
+			<key>label</key>
+			<string>Liquid switch</string>
+		</dict>
+		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 		</dict>

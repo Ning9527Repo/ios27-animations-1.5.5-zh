@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory() as tmp:
     control=run('dpkg-deb','-f',str(p))
     fields=dict(x.split(': ',1) for x in control.splitlines() if ': ' in x)
     assert fields['Architecture']=='iphoneos-arm64e',fields
-    assert fields['Version']=='1.5.5+ningzh1',fields
+    assert fields['Version']=='1.5.6+ningzh1',fields
     assert fields['Author']=='Ning&bazik1337',fields
     assert fields['Maintainer']=='Ning&bazik1337',fields
     run('dpkg-deb','-x',str(p),str(d))
@@ -24,13 +24,21 @@ with tempfile.TemporaryDirectory() as tmp:
     prefs=d/'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle'
     app=prefs/'iOS2627AnimsPrefs'
     assert lib.is_file() and app.is_file()
+    resource=d/'Library/Application Support/iOS27Animations/TheseusSwitchResources.bundle'
+    assert (resource/'default.metallib').stat().st_size>1000
+    assert plistlib.loads((resource/'Info.plist').read_bytes())['CFBundleVersion']=='1.5.6.1'
+    assert sorted(x.relative_to(d).as_posix() for x in d.rglob('*.dylib'))==['Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib']
+    switch_rows=plistlib.loads((prefs/'Root.plist').read_bytes())['items']
+    assert sum(x.get('key')=='LiquidSwitchEnabled' for x in switch_rows)==1
+    for name in ('LICENSE','NOTICE','vendor-manifest.json'):
+        assert (d/'usr/share/doc/com.bazik1337.ios2627anims/Theseus'/name).is_file()
     assert (d/'Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').is_file()
     for page in ('Root','AppAnimations','NotificationCenter','Advanced'):
         assert (prefs/'zh-Hans.lproj'/(page+'.strings')).is_file()
     assert (prefs/'AppAnimations.plist').is_file() and (prefs/'NotificationCenter.plist').is_file()
     for page in ('AppAnimations','NotificationCenter','Advanced'):
-        assert sum(x.get('cell')=='PSGroupCell' for x in plistlib.loads((prefs/'Resources'/(page+'.plist')).read_bytes())['items'])==1
-    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='1.5.5'
+        assert sum(x.get('cell')=='PSGroupCell' for x in plistlib.loads((prefs/(page+'.plist')).read_bytes())['items'])==1
+    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='1.5.6'
     out=[]
     for f in (lib,app):
         data=f.read_bytes()

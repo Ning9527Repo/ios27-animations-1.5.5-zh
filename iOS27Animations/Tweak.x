@@ -1596,6 +1596,7 @@ static void CG27InstallHooks(void) {
 %end
 
 %ctor {
+    if (![NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.apple.springboard"]) return;
     CG27StartupTrace("constructor entered");
     %init(CG27Startup);
     CG27StartupTrace("launch hook installed");

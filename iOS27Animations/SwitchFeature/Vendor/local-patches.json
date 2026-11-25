@@ -1,0 +1,41 @@
+{
+  "Vendor/Theseus/Sources/Theseus/Components/TheseusSwitch.swift": {
+    "upstream_sha256": "5349ffd26f8dd122e70d4158f5bd432d07190564a7c5998323d0db1217d48e65",
+    "patched_sha256": "b485afc97c85ddf582c1f7ce2bf409aa486d22342305d1f786cd525a8bf75dc0",
+    "reason": "Keep Clock reuse reset and replay identity guards; start recovery flight immediately and move fallback thumb with the spring until first frame."
+  },
+  "Vendor/Theseus/Sources/Theseus/Rendering/TheseusRenderer.swift": {
+    "upstream_sha256": "cba7c8ff8ef15c2db1b2230980f0bd07a7e9eda45cf482765cd7eb23a7a505fa",
+    "patched_sha256": "0f7fe9642cddac3a0aeba7dd06547dc94620e0b514f80d35d797855855fee382",
+    "reason": "Preserve prior renderer fixes; delayed idle cleanup, immediate pressure/background purge, generation-safe GPU resource return."
+  },
+  "Vendor/Theseus/Sources/Theseus/Rendering/BackgroundCaptureDraw.swift": {
+    "upstream_sha256": "adc48d72a6dd63fca5285e19b6d575a540254c3a756e1d9735b885b8f3614465",
+    "patched_sha256": "072bfe5a14d33cfd7c857d9407223a7415ba6adfa3e52a2fb814eb17eb3dcb34",
+    "reason": "Preserve capture behavior; reset ring on purge and retry incomplete allocation."
+  },
+  "Vendor/Theseus/Sources/Theseus/Rendering/ViewLayerCapture.swift": {
+    "upstream_sha256": "137489e6e8bc6a12779e797a39b70d89f8efc11b6b78b8f7c890ee16c3e4ec38",
+    "patched_sha256": "27ddc38fa4535903d65f3452cc49c346557901b96d5055ffb8699e2f7f06bfd6",
+    "reason": "Preserve earlier capture fixes; bound idle IOSurfaces and recycle with generation checks."
+  },
+  "Vendor/Theseus/Sources/Theseus/Rendering/CaptureCompensation.swift": {
+    "upstream_sha256": "d6b79de21e7ef1dce05401ba0417de00f174242c909759b03781e0d07c874eff",
+    "patched_sha256": "befa1f53271969ca53a7cd0e153d1b536b7d65deb05c963e50ea3aea4d46cb5c"
+  },
+  "Vendor/Theseus/Sources/Theseus/Internal/DisplayLinkDriver.swift": {
+    "upstream_sha256": "7709eef8fbf779729c30d03f55d8e5a62af3ea92e15ecbb2b0c957ae829a7ac0",
+    "patched_sha256": "b54b118e86791d49c59d90f66d29ef3c01f4c50ca5dce2c4e62a20c42e5aaf96",
+    "reason": "Skip invalidated display link subscriptions in a tick snapshot."
+  },
+  "Vendor/Theseus/Sources/Theseus/Rendering/TheseusTextureCache.swift": {
+    "upstream_sha256": "ade49a6cdf128b9999e9fc484feb9eb8d4907c4f7dac85fc56c23dec5edb86d5",
+    "patched_sha256": "6e0a5c5fef3db58304ebe85dd9e1823d4fb8106e0a533cc6d522f32c7adbe904",
+    "reason": "Bound idle texture bytes/count across dimensions and reject stale generation returns."
+  },
+  "Vendor/Theseus/Sources/Theseus/Rendering/BlurKernelCalculator.swift": {
+    "upstream_sha256": "c27721d6daa4aae7b16188405d99e2c7e197b335fdf69cde97213ded29a05ff4",
+    "patched_sha256": "ba868f50a23d00404db2dd396f9638b769c73a69615937937f57d6fea8b08b00",
+    "reason": "Retry failed Metal buffer allocation instead of caching nil."
+  }
+}

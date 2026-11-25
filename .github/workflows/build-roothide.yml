@@ -1,4 +1,4 @@
-name: iOS 27 Animations 1.5.5 Chinese RootHide
+name: iOS 27 Animations + Theseus Switch 1.5.6+ningzh1 RootHide
 on:
   workflow_dispatch:
 permissions:
@@ -13,6 +13,10 @@ jobs:
         run: |
           python3 tests/check-localization.py
           python3 tests/check-settings-pages.py
+          python3 tests/check-liquid-switch-integration.py
+          python3 iOS27Animations/SwitchFeature/tests/geometry-policy.py
+          python3 iOS27Animations/SwitchFeature/tests/clock-replay-policy.py
+          python3 iOS27Animations/SwitchFeature/tests/memory-cache-policy.py
       - name: Install native RootHide toolchain
         run: |
           brew install dpkg ldid xz
@@ -21,6 +25,8 @@ jobs:
           git checkout 958fea4f779943505b15b93c88bb4db8d97b346d
           git submodule update --init --recursive --depth 1
           THEOS="$RUNNER_TEMP/theos" "$RUNNER_TEMP/theos/bin/install-sdk" latest
+      - name: Compile integrated Theseus shader resource
+        run: python3 tools/prepare-switch-resources.py "$RUNNER_TEMP/switch-resources"
       - name: Build real RootHide arm64e package
         env:
           THEOS: ${{ runner.temp }}/theos
@@ -29,15 +35,25 @@ jobs:
           STAGE=$(find iOS27Animations/.theos -type d -path '*/Library/PreferenceBundles/iOS2627AnimsPrefs.bundle' -print -quit)
           DYLIB=$(find iOS27Animations/.theos -type f -path '*/Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib' -print -quit)
           test -n "$STAGE" && test -n "$DYLIB"
+          STAGE_ROOT="${STAGE%/Library/PreferenceBundles/iOS2627AnimsPrefs.bundle}"
+          RESOURCE_ROOT="$STAGE_ROOT/Library/Application Support/iOS27Animations"
+          mkdir -p "$RESOURCE_ROOT" "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus"
+          cp -R "$RUNNER_TEMP/switch-resources/TheseusSwitchResources.bundle" "$RESOURCE_ROOT/"
+          cp iOS27Animations/SwitchFeature/LICENSE-Theseus "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus/LICENSE"
+          cp iOS27Animations/SwitchFeature/NOTICE-Theseus "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus/NOTICE"
+          cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.bazik1337.ios2627anims/Theseus/vendor-manifest.json"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
-          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='1.5.5+ningzh1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
+          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='1.5.6+ningzh1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify final deb and code signatures
-        run: python3 tests/verify-roothide.py iOS27Animations/packages
+        run: |
+          python3 tests/verify-roothide.py iOS27Animations/packages
+          python3 tests/check-arm64e-metadata.py iOS27Animations/packages/*.deb
+          python3 tests/check-code-pages.py iOS27Animations/packages/*.deb
       - name: Upload package and verification
         uses: actions/upload-artifact@v4
         with:
-          name: iOS27Animations-1.5.5-ningzh1-arm64e
+          name: iOS27Animations-1.5.6-ningzh1-arm64e
           path: |
             iOS27Animations/packages/*.deb
             iOS27Animations/packages/*.json
