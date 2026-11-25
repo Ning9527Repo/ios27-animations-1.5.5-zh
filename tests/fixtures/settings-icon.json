@@ -1,0 +1,33 @@
+{
+  "source": {
+    "path": "artwork/settings-icon-source.png",
+    "sha256": "60ffe30ab3a6f3105329294bcf94dfcb6609352e095fd01a66855fc59b41485a",
+    "pixels": [
+      400,
+      400
+    ]
+  },
+  "exports": {
+    "icon.png": {
+      "pixels": [
+        29,
+        29
+      ],
+      "sha256": "56db356b52463df23142187c6f50e0524e188d6d5d44f79aa08aa54ec0544488"
+    },
+    "icon@2x.png": {
+      "pixels": [
+        58,
+        58
+      ],
+      "sha256": "423d0c150673370e63d7af0c310293536595b50903cdbdea620d00ebe653f2ae"
+    },
+    "icon@3x.png": {
+      "pixels": [
+        87,
+        87
+      ],
+      "sha256": "228bfe5abc2ef23dafd6eda40b3874e044c6470b527881adadb5f647935766f1"
+    }
+  }
+}

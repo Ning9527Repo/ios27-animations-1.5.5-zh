@@ -77,8 +77,6 @@
 			<string>PSLinkCell</string>
 			<key>detail</key>
 			<string>CG27PageController</string>
-			<key>iconSymbol</key>
-			<string>slider.horizontal.3</string>
 			<key>isController</key>
 			<true/>
 			<key>label</key>
@@ -95,8 +93,6 @@
 			<string>resetSettings</string>
 			<key>cell</key>
 			<string>PSButtonCell</string>
-			<key>iconSymbol</key>
-			<string>arrow.counterclockwise</string>
 			<key>label</key>
 			<string>Reset settings</string>
 		</dict>
@@ -105,52 +101,8 @@
 			<string>respring</string>
 			<key>cell</key>
 			<string>PSButtonCell</string>
-			<key>iconSymbol</key>
-			<string>arrow.clockwise</string>
 			<key>label</key>
 			<string>Respring</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Author</string>
-		</dict>
-		<dict>
-			<key>action</key>
-			<string>openTelegram</string>
-			<key>cell</key>
-			<string>PSButtonCell</string>
-			<key>iconSymbol</key>
-			<string>person.crop.circle</string>
-			<key>label</key>
-			<string>@bazik1337</string>
-		</dict>
-		<dict>
-			<key>action</key>
-			<string>openChannel</string>
-			<key>cell</key>
-			<string>PSButtonCell</string>
-			<key>iconSymbol</key>
-			<string>paperplane</string>
-			<key>label</key>
-			<string>Telegram channel</string>
-		</dict>
-		<dict>
-			<key>action</key>
-			<string>openGitHub</string>
-			<key>cell</key>
-			<string>PSButtonCell</string>
-			<key>iconSymbol</key>
-			<string>chevron.left.forwardslash.chevron.right</string>
-			<key>label</key>
-			<string>GitHub</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>footerText</key>
-			<string>version</string>
 		</dict>
 	</array>
 	<key>title</key>

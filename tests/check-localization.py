@@ -28,8 +28,9 @@ for p in root.rglob('*.plist'):
 entry=plistlib.loads((prefs/'layout/Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').read_bytes())['entry']
 assert entry['label']=='iOS 27 动画' and entry['icon']=='icon.png'
 control=dict(line.split(': ',1) for line in (original/'control').read_text().splitlines() if ': ' in line)
-assert control['Version']=='1.5.9+ningzh1' and control['Architecture']=='iphoneos-arm64e'
-assert control['Author']=='Ning&bazik1337' and control['Maintainer']=='Ning&bazik1337'
+assert control['Version']=='1.5.10+ningzh1' and control['Architecture']=='iphoneos-arm64e'
+assert control['Name']=='Ning · iOS 27 动画' and 'Icon' not in control
+assert control['Author']=='Ning' and control['Maintainer']=='Ning'
 assert (root/'iOS27Animations/Tweak.x').is_file() and (root/'iOS27Animations/GenieEngine.h').is_file()
 assert (root/'iOS27AnimationsReborn/Tweak.x').is_file()
 wf=(root/'.github/workflows/build-roothide.yml').read_text()

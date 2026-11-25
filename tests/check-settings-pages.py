@@ -8,7 +8,11 @@ pages={name:plistlib.loads((res/(name+'.plist')).read_bytes()) for name in ('Roo
 main=pages['Root']['items']
 assert main[:2]==fixture['root_prefix'], 'master enable changed'
 assert main[2]==fixture['switch_control']
-assert main[7:]==fixture['root_tail'], 'unrelated homepage rows changed'
+clean_tail=[]
+for row in fixture['root_tail']:
+    if row.get('label')=='Author': break
+    clean_tail.append({k:v for k,v in row.items() if k!='iconSymbol'})
+assert main[7:]==clean_tail, 'homepage changed beyond removed author/footer/icons'
 links=[x for x in main if x.get('cell')=='PSLinkCell']
 assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Notification Center','NotificationCenter'),('Advanced','Advanced')]
 for link in links:
@@ -46,7 +50,20 @@ for i,m in enumerate(starts):
     key=cls+' '+m.group().rsplit('{',1)[0].strip()
     assert key not in methods,key
     methods[key]=hashlib.sha256(text.encode()).hexdigest()
-assert set(methods)==set(baseline['methods'])|set(baseline['added_methods'])
+removed={
+    'CG27RootListController - (void)'+name for name in
+    ('dealloc','viewDidAppear:(BOOL)animated','showPrompt','open:(NSString *)url',
+     'openTelegram','openChannel','openGitHub')
+}
+appearance_changed={
+    'CG27PageController - (NSArray *)specifiers',
+    'CG27PageController - (void)viewDidLoad',
+    'CG27PageController - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath',
+    'CG27RootListController - (void)viewDidLoad',
+}
+added={'CG27PageController - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath'}
+assert set(methods)==(set(baseline['methods'])-removed)|set(baseline['added_methods'])|added
 for key,digest in baseline['methods'].items():
-    if key not in baseline['changed_methods']: assert methods[key]==digest,key
-print('PASS: three submenus, one card per page, all 10 controls/languages and animation engine unchanged; only switch publish/save/reset controller paths changed (static only)')
+    if key not in set(baseline['changed_methods'])|appearance_changed|removed:
+        assert methods[key]==digest,key
+print('PASS: three submenus, one card per page, all 10 controls/languages and animation engine unchanged; approved promotion/icon removal and appearance changes only (static only)')

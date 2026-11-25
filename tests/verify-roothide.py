@@ -14,9 +14,10 @@ with tempfile.TemporaryDirectory() as tmp:
     control=run('dpkg-deb','-f',str(p))
     fields=dict(x.split(': ',1) for x in control.splitlines() if ': ' in x)
     assert fields['Architecture']=='iphoneos-arm64e',fields
-    assert fields['Version']=='1.5.9+ningzh1',fields
-    assert fields['Author']=='Ning&bazik1337',fields
-    assert fields['Maintainer']=='Ning&bazik1337',fields
+    assert fields['Version']=='1.5.10+ningzh1',fields
+    assert fields['Author']=='Ning',fields
+    assert fields['Maintainer']=='Ning',fields
+    assert fields['Name']=='Ning · iOS 27 动画' and 'Icon' not in fields,fields
     assert 'com.opa334.libsandy' in fields['Depends'],fields
     run('dpkg-deb','-x',str(p),str(d))
     profile=d/'Library/libSandy/iOS27Animations_SwitchReadConfig.plist'
@@ -34,19 +35,28 @@ with tempfile.TemporaryDirectory() as tmp:
     assert lib.is_file() and app.is_file()
     resource=d/'Library/Application Support/iOS27Animations/TheseusSwitchResources.bundle'
     assert (resource/'default.metallib').stat().st_size>1000
-    assert plistlib.loads((resource/'Info.plist').read_bytes())['CFBundleVersion']=='1.5.9.1'
+    assert plistlib.loads((resource/'Info.plist').read_bytes())['CFBundleVersion']=='1.5.10.1'
     assert sorted(x.relative_to(d).as_posix() for x in d.rglob('*.dylib'))==['Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib']
     switch_rows=plistlib.loads((prefs/'Root.plist').read_bytes())['items']
     assert sum(x.get('key')=='LiquidSwitchEnabled' for x in switch_rows)==1
     for name in ('LICENSE','NOTICE','vendor-manifest.json'):
         assert (d/'usr/share/doc/com.bazik1337.ios2627anims/Theseus'/name).is_file()
-    assert (d/'Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').is_file()
+    entry=plistlib.loads((d/'Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').read_bytes())['entry']
+    assert entry['icon']=='icon.png' and entry['isController'] is True
+    icon_manifest=json.loads((root/'tests/fixtures/settings-icon.json').read_text())
+    for name,expected in icon_manifest['exports'].items():
+        raw=(prefs/name).read_bytes()
+        assert raw[:8]==b'\x89PNG\r\n\x1a\n' and raw[24:26]==bytes([8,6])
+        assert list(struct.unpack('>II',raw[16:24]))==expected['pixels']
+        assert hashlib.sha256(raw).hexdigest()==expected['sha256'],name
+    assert not any(x.startswith('usr/share/icons/') for x in files),'unexpected Sileo package artwork'
+    assert switch_rows==plistlib.loads((root/'iOS27Animations/Prefs/Resources/Root.plist').read_bytes())['items']
     for page in ('Root','AppAnimations','NotificationCenter','Advanced'):
         assert (prefs/'zh-Hans.lproj'/(page+'.strings')).is_file()
     assert (prefs/'AppAnimations.plist').is_file() and (prefs/'NotificationCenter.plist').is_file()
     for page in ('AppAnimations','NotificationCenter','Advanced'):
         assert sum(x.get('cell')=='PSGroupCell' for x in plistlib.loads((prefs/(page+'.plist')).read_bytes())['items'])==1
-    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='1.5.9'
+    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='1.5.10'
     out=[]
     for f in (lib,app):
         data=f.read_bytes()
