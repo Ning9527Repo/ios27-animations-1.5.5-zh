@@ -54,14 +54,12 @@ jobs:
           DYLIB=$(find iOS27Animations/.theos -type f -path '*/Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib' -print -quit)
           test -n "$STAGE" && test -n "$DYLIB"
           STAGE_ROOT="${STAGE%/Library/PreferenceBundles/iOS2627AnimsPrefs.bundle}"
-          PACKAGE_ROOT="${STAGE_ROOT%/var/jb}"
-          test "$PACKAGE_ROOT" != "$STAGE_ROOT"
           RESOURCE_ROOT="$STAGE_ROOT/Library/Application Support/iOS27Animations"
-          mkdir -p "$RESOURCE_ROOT" "$PACKAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus"
+          mkdir -p "$RESOURCE_ROOT" "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus"
           cp -R "$RUNNER_TEMP/switch-resources/TheseusSwitchResources.bundle" "$RESOURCE_ROOT/"
-          cp iOS27Animations/SwitchFeature/LICENSE-Theseus "$PACKAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/LICENSE"
-          cp iOS27Animations/SwitchFeature/NOTICE-Theseus "$PACKAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/NOTICE"
-          cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$PACKAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/vendor-manifest.json"
+          cp iOS27Animations/SwitchFeature/LICENSE-Theseus "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/LICENSE"
+          cp iOS27Animations/SwitchFeature/NOTICE-Theseus "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/NOTICE"
+          cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/vendor-manifest.json"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
           make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.3' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
