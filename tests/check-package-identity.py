@@ -14,18 +14,19 @@ assert control['Name'] == 'iOS 27 动画'
 assert control['Author'] == control['Maintainer'] == 'Ning'
 import os
 expected_arch = os.environ.get('PACKAGE_ARCH', 'iphoneos-arm64e')
-assert control['Version'] == '0.3' and control['Architecture'] == expected_arch
+expected_ver = os.environ.get('PACKAGE_VERSION', '0.3')
+assert control['Version'] == expected_ver and control['Architecture'] == expected_arch
 assert 'firmware (>= 16.0)' in control['Depends']
 assert 'com.ning.keyboardglass' in control['Conflicts'].split(', ')
 assert 'com.ning.keyboardglass' in control['Replaces'].split(', ')
 assert 'firmware (>= 16.0)' in control['Depends']
-assert control['Version']=='0.3'
+assert control['Version']==expected_ver
 assert 'Icon' not in control
 for field in ('Conflicts', 'Replaces'):
     entries = [x.strip() for x in control[field].split(',')]
     assert OLD in entries and NEW not in entries, (field, entries)
 expected = f"{control['Package']}_{control['Version']}_{control['Architecture']}.deb"
-assert expected == f"com.ning.ios2627anims_0.3_{expected_arch}.deb"
+assert expected == f"com.ning.ios2627anims_{expected_ver}_{expected_arch}.deb"
 # Do not blindly replace the legacy preferences namespace: existing settings
 # must remain readable by the unchanged Settings and runtime implementation.
 res = ROOT / 'iOS27Animations/Prefs/Resources'

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify a real rootless arm64 package, install paths and signed binaries."""
+"""Verify a real rootless arm64/arm64e fat package and signed binaries."""
 import hashlib
 import json
 import pathlib
@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory(prefix="ios27-arm64-verify-") as tmp:
     control = run("dpkg-deb", "-f", str(package))
     fields = dict(line.split(": ", 1) for line in control.splitlines() if ": " in line)
     assert fields["Package"] == "com.ning.ios2627anims", fields
-    assert fields["Version"] == "0.3" and fields["Architecture"] == "iphoneos-arm64", fields
+    assert fields["Version"] == "0.3.1" and fields["Architecture"] == "iphoneos-arm64", fields
     assert fields["Author"] == fields["Maintainer"] == "Ning", fields
     assert fields["Name"] == "iOS 27 动画" and "Icon" not in fields, fields
     assert package.name == f"{fields['Package']}_{fields['Version']}_{fields['Architecture']}.deb"
@@ -56,26 +56,36 @@ with tempfile.TemporaryDirectory(prefix="ios27-arm64-verify-") as tmp:
     app = prefs / "iOS2627AnimsPrefs"
     resource = dest / "var/jb/Library/Application Support/iOS27Animations/TheseusSwitchResources.bundle"
     assert main.is_file() and app.is_file() and (resource / "default.metallib").stat().st_size > 1000
-    assert plistlib.loads((resource / "Info.plist").read_bytes())["CFBundleVersion"] == "0.3"
+    assert plistlib.loads((resource / "Info.plist").read_bytes())["CFBundleVersion"] == "0.3.1"
     assert sorted(p.relative_to(dest).as_posix() for p in dest.rglob("*.dylib")) == ["var/jb/Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib"]
-    assert plistlib.loads((prefs / "Info.plist").read_bytes())["CFBundleShortVersionString"] == "0.3"
+    assert plistlib.loads((prefs / "Info.plist").read_bytes())["CFBundleShortVersionString"] == "0.3.1"
     entry = plistlib.loads((dest / "var/jb/Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist").read_bytes())["entry"]
     assert entry["label"] == "iOS 27 动画" and entry["icon"] == "icon.png" and entry["isController"] is True
     rows = plistlib.loads((prefs / "Root.plist").read_bytes())["items"]
     assert rows == plistlib.loads((root / "iOS27Animations/Prefs/Resources/Root.plist").read_bytes())["items"]
-    for binary in (main, app):
+    def slices(binary):
         data = binary.read_bytes()
-        assert data[:4] == b"\xcf\xfa\xed\xfe", binary
-        cpu, subtype = struct.unpack_from("<II", data, 4)
-        assert cpu == 0x100000c and subtype == 0, (binary, hex(cpu), hex(subtype))
+        assert data[:4] == b"\xca\xfe\xba\xbe", binary
+        _, count = struct.unpack_from(">II", data)
+        found = {}
+        for i in range(count):
+            cpu, subtype, offset, size, align = struct.unpack_from(">IIIII", data, 8 + 20 * i)
+            assert cpu == 0x100000c and subtype in (0, 0x80000002), (binary, hex(cpu), hex(subtype))
+            thin = data[offset:offset + size]
+            assert thin[:4] == b"\xcf\xfa\xed\xfe"
+            t_cpu, t_subtype = struct.unpack_from("<II", thin, 4)
+            assert (t_cpu, t_subtype) == (cpu, subtype)
+            found[subtype] = {"bytes": size, "sha256": hashlib.sha256(thin).hexdigest()}
+        assert set(found) == {0, 0x80000002}, (binary, found)
+        return found
+    binaries = []
+    for binary in (main, app):
+        binaries.append({"path": binary.relative_to(dest).as_posix(), "slices": slices(binary)})
         run("codesign", "--verify", "--strict", "--verbose=4", str(binary))
     report = {
         "status": "passed", "filename": package.name, "bytes": package.stat().st_size,
         "sha256": hashlib.sha256(package.read_bytes()).hexdigest(), "control": fields,
-        "mach_o": [{"path": p.relative_to(dest).as_posix(), "cpu": "arm64", "subtype": "0x0",
-                     "bytes": p.stat().st_size, "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
-                     "signature": "strict-pass"} for p in (main, app)],
-        "file_count": len(files), "rootless_layout": "var/jb/",
+        "mach_o": binaries, "file_count": len(files), "rootless_layout": "var/jb/",
         "libSandy_profiles": "native /var/mobile paths",
     }
     (pkgs / "verification-arm64.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")

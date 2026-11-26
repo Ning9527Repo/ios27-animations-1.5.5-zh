@@ -39,7 +39,7 @@ links=[x for x in main if x.get('cell')=='PSLinkCell']
 assert sum(x.get('label')=='Keyboard Glass' and x.get('plist')=='KeyboardGlass' for x in links)==1
 assert not (prefs/'KeyboardGlassEntry.plist').exists()
 control=dict(line.split(': ',1) for line in (original/'control').read_text().splitlines() if ': ' in line)
-assert control['Version']=='0.3' and control['Architecture']==os.environ.get('PACKAGE_ARCH','iphoneos-arm64e')
+assert control['Version']==os.environ.get('PACKAGE_VERSION','0.3') and control['Architecture']==os.environ.get('PACKAGE_ARCH','iphoneos-arm64e')
 assert control['Package']=='com.ning.ios2627anims'
 assert control['Name']=='iOS 27 动画' and 'Icon' not in control
 assert control['Author']=='Ning' and control['Maintainer']=='Ning'

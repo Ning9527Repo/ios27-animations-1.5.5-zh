@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create an isolated rootless/arm64 build tree from the signed-source checkout."""
+"""Create an isolated rootless dual-slice (arm64+arm64e) build tree."""
 import pathlib
 import shutil
 import sys
@@ -20,12 +20,17 @@ def replace(path, old, new, count=1):
         raise SystemExit(f"{path}: expected {count} occurrences, found {found}")
     file.write_text(text.replace(old, new))
 
-replace("iOS27Animations/Makefile", "ARCHS = arm64e\nTHEOS_PACKAGE_SCHEME = roothide\n",
-        "ARCHS = arm64\nTHEOS_PACKAGE_SCHEME = rootless\n")
-replace("iOS27Animations/Prefs/Makefile", "ARCHS = arm64e\n", "ARCHS = arm64\n")
-replace("iOS27Animations/control", "Architecture: iphoneos-arm64e", "Architecture: iphoneos-arm64")
+# Baseline source is RootHide arm64e; convert to rootless dual-slice.
+replace("iOS27Animations/Makefile",
+        "ARCHS = arm64e\nTHEOS_PACKAGE_SCHEME = roothide\n",
+        "ARCHS = arm64 arm64e\nTHEOS_PACKAGE_SCHEME = rootless\n")
+replace("iOS27Animations/Prefs/Makefile", "ARCHS = arm64e\n",
+        "ARCHS = arm64 arm64e\n")
+replace("iOS27Animations/control",
+        "Version: 0.3\nArchitecture: iphoneos-arm64e",
+        "Version: 0.3.1\nArchitecture: iphoneos-arm64")
 replace("iOS27Animations/layout/Library/libSandy/iOS27Animations_SwitchReadConfig.plist",
         "/rootfs/var/mobile/Library/Accessibility/", "/var/mobile/Library/Accessibility/")
 replace("iOS27Animations/layout/Library/libSandy/KeyboardGlass_ReadConfig.plist",
         "/rootfs/var/mobile/Library/Accessibility/", "/var/mobile/Library/Accessibility/")
-print(f"prepared rootless arm64 source tree: {out}")
+print(f"prepared rootless dual-slice arm64/arm64e tree: {out}")
