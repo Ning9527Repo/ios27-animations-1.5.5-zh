@@ -51,10 +51,12 @@ assert 'if (!NGLoadSwitchFeaturePreference(&enabled)) return;' in hooks
 assert 'if (!gNGHasValidSwitchConfiguration) NGRecoverSwitchConfiguration();' in hooks
 assert 'libSandy_applyProfile' in reader
 assert 'com.opa334.libsandy' in (root/'iOS27Animations/control').read_text()
+import os
+profile_prefix = '/var/mobile' if os.environ.get('PACKAGE_SCHEME') == 'rootless' else '/rootfs/var/mobile'
 profile=plistlib.loads((root/'iOS27Animations/layout/Library/libSandy/iOS27Animations_SwitchReadConfig.plist').read_bytes())
-assert profile=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/iOS27Animations-switch.plist'}]}
+assert profile=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':profile_prefix+'/Library/Accessibility/iOS27Animations-switch.plist'}]}
 kgread=plistlib.loads((root/'iOS27Animations/layout/Library/libSandy/KeyboardGlass_ReadConfig.plist').read_bytes())
-assert kgread=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':'/rootfs/var/mobile/Library/Accessibility/KeyboardGlass-preferences.plist'}]}
+assert kgread=={'AllowedProcesses':['*'],'Extensions':[{'type':'file','extension_class':'com.apple.app-sandbox.read','path':profile_prefix+'/Library/Accessibility/KeyboardGlass-preferences.plist'}]}
 kgprefs=(root/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text()
 assert 'NGPublishGlobalSnapshot(&publishError)' in kgprefs
 assert 'CG27LSSavedValueFromImage' in config and 'CG27LSPublishValue' in config

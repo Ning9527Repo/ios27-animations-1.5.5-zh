@@ -10,7 +10,8 @@ with tempfile.TemporaryDirectory() as temp:
     d=pathlib.Path(temp);m=d/'configuration.m';m.write_text(source);binary=d/'configuration'
     if sys.platform!='darwin':
         sdk='/var/minis/shared/sdks/iPhoneOS16.5.sdk'
-        subprocess.run(['clang','-fsyntax-only','-target','arm64e-apple-ios15.0','-isysroot',sdk,
+        target = 'arm64-apple-ios15.0' if os.environ.get('PACKAGE_SCHEME') == 'rootless' else 'arm64e-apple-ios15.0'
+        subprocess.run(['clang','-fsyntax-only','-target',target,'-isysroot',sdk,
                         '-fobjc-arc','-fblocks','-Wall','-Wextra','-Werror','-I',str(root),str(m)],check=True)
         print('PASS strict arm64e syntax for production configuration harness; native Foundation execution deferred to macOS')
     else:

@@ -36,7 +36,9 @@ assert 'static void NGInstallBackdropHook(void)' in s and s.count('NGInstallBack
 assert 'static BOOL installed=NO' in s
 assert s.index('static void NGInstallBackdropHook(void)')<s.index('__attribute__((constructor))')
 mk=(P/'iOS27Animations/Makefile').read_text()
-assert 'TARGET := iphone:clang:latest:16.0' in mk and 'ARCHS = arm64e' in mk
+import os
+expected_arch = 'arm64' if os.environ.get('PACKAGE_SCHEME') == 'rootless' else 'arm64e'
+assert 'TARGET := iphone:clang:latest:16.0' in mk and f'ARCHS = {expected_arch}' in mk
 assert 'NGApplyConfigAccessProfile("KeyboardGlass_ReadConfig")' in (P/'iOS27Animations/KeyboardGlass/GlassPreferences.h').read_text()
 root=plistlib.loads((P/'iOS27Animations/Prefs/Resources/KeyboardGlass.plist').read_bytes())['items']
 assert next(v for v in root if v.get('key')=='MaterialBlurEnabled')['default'] is False

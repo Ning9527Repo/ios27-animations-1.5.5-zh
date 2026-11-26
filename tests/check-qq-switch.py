@@ -64,6 +64,8 @@ with tempfile.TemporaryDirectory() as tmp:
         p = d/'qq.swift'; p.write_text(swift)
         subprocess.run(['swift', str(p)], check=True)
     else:
-        subprocess.run(['clang','-fsyntax-only','-target','arm64e-apple-ios15.0','-isysroot',
+        import os
+        expected_target = 'arm64-apple-ios15.0' if os.environ.get('PACKAGE_SCHEME') == 'rootless' else 'arm64e-apple-ios15.0'
+        subprocess.run(['clang','-fsyntax-only','-target',expected_target,'-isysroot',
                         '/var/minis/shared/sdks/iPhoneOS16.5.sdk','-fobjc-arc','-fblocks','-Wall','-Wextra','-Werror',str(p)], check=True)
         print('PASS extracted QQ production strict syntax; native execution is macOS-only')

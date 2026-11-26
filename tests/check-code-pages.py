@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Read final package Mach-O metadata and verify every signed code page."""
-import hashlib,json,pathlib,struct,subprocess,sys,tempfile
+import hashlib,json,pathlib,struct,subprocess,sys,tempfile,os
 
 def check(data):
  assert data[:4]==b'\xcf\xfa\xed\xfe'
  _,cpu,sub,ft,n,sz,flags,_=struct.unpack_from('<8I',data)
- assert cpu==0x100000c and sub==0x80000002 and ft in (6,8)
+ import os
+ expected_sub=int(os.environ.get('MACHO_SUBTYPE','0x80000002'),0)
+ assert cpu==0x100000c and sub==expected_sub and ft in (6,8)
  off=32;signature=None;minimum=None
  for _ in range(n):
   cmd,size=struct.unpack_from('<II',data,off);assert size>=8 and off+size<=32+sz
@@ -45,7 +47,8 @@ def verify(path):
     if data[:4]==b'\xcf\xfa\xed\xfe': results.append({'path':p.relative_to(d).as_posix(),**check(data)})
   assert len(results)==2,results
  report={'package':path.name,'sha256':hashlib.sha256(path.read_bytes()).hexdigest(),'mach_o':results,'status':'passed'}
- (path.parent/'arm64e-metadata.json').write_text(json.dumps(report,indent=2)+'\n')
+ arch=os.environ.get('PACKAGE_ARCH','arm64e')
+ (path.parent/f'{arch}-metadata.json').write_text(json.dumps(report,indent=2)+'\n')
  print(json.dumps(report,indent=2))
 if __name__=='__main__':
  for arg in sys.argv[1:]: verify(pathlib.Path(arg))

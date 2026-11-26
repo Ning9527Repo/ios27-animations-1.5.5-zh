@@ -3,9 +3,12 @@ import pathlib,plistlib,re,hashlib,subprocess
 root=pathlib.Path(__file__).resolve().parents[1]
 prefs=root/'iOS27Animations/Prefs'
 original=root/'iOS27Animations'
-assert 'THEOS_PACKAGE_SCHEME = roothide' in (original/'Makefile').read_text()
-assert 'ARCHS = arm64e' in (original/'Makefile').read_text()
-assert 'ARCHS = arm64e' in (prefs/'Makefile').read_text()
+import os
+expected_scheme = os.environ.get('PACKAGE_SCHEME', 'roothide')
+assert f'THEOS_PACKAGE_SCHEME = {expected_scheme}' in (original/'Makefile').read_text()
+expected_arch = 'arm64' if expected_scheme == 'rootless' else 'arm64e'
+assert f'ARCHS = {expected_arch}' in (original/'Makefile').read_text()
+assert f'ARCHS = {expected_arch}' in (prefs/'Makefile').read_text()
 assert '-F$(THEOS_PROJECT_DIR)/Prefs/linker' in (prefs/'Makefile').read_text()
 stub=prefs/'linker/Preferences.framework/Preferences.tbd'
 assert 'PSListController._specifiers' in stub.read_text()
@@ -36,7 +39,7 @@ links=[x for x in main if x.get('cell')=='PSLinkCell']
 assert sum(x.get('label')=='Keyboard Glass' and x.get('plist')=='KeyboardGlass' for x in links)==1
 assert not (prefs/'KeyboardGlassEntry.plist').exists()
 control=dict(line.split(': ',1) for line in (original/'control').read_text().splitlines() if ': ' in line)
-assert control['Version']=='0.3' and control['Architecture']=='iphoneos-arm64e'
+assert control['Version']=='0.3' and control['Architecture']==os.environ.get('PACKAGE_ARCH','iphoneos-arm64e')
 assert control['Package']=='com.ning.ios2627anims'
 assert control['Name']=='iOS 27 动画' and 'Icon' not in control
 assert control['Author']=='Ning' and control['Maintainer']=='Ning'
