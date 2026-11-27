@@ -14,7 +14,7 @@ with tempfile.TemporaryDirectory() as tmp:
     control=run('dpkg-deb','-f',str(p))
     fields=dict(x.split(': ',1) for x in control.splitlines() if ': ' in x)
     assert fields['Architecture']=='iphoneos-arm64e',fields
-    assert fields['Version']=='0.3',fields
+    assert fields['Version']=='0.3.3',fields
     assert fields['Author']=='Ning',fields
     assert fields['Maintainer']=='Ning',fields
     assert fields['Package']=='com.ning.ios2627anims',fields
@@ -34,8 +34,7 @@ with tempfile.TemporaryDirectory() as tmp:
     for item in (profile,kgread):
         assert item.stat().st_mode & 0o777 == 0o644
     assert plistlib.loads((d/'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/KeyboardGlass.plist').read_bytes())['items']
-    for lang in ('en','ru','zh-Hans'):
-        assert (d/f'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/{lang}.lproj/KeyboardGlass.strings').is_file()
+    assert (d/f'Library/PreferenceBundles/iOS2627AnimsPrefs.bundle/zh-Hans.lproj/KeyboardGlass.strings').is_file()
     for profile_name in ('iOS27Animations_SwitchReadConfig.plist','KeyboardGlass_ReadConfig.plist'):
         member=members.get('Library/libSandy/'+profile_name)
         assert member is not None,profile_name

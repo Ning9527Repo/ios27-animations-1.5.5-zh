@@ -1,4 +1,4 @@
-name: iOS 27 Animations 0.3.2 rootless universal arm64+arm64e
+name: iOS 27 Animations 0.3.2 rootless arm64
 on:
   workflow_dispatch:
 permissions:
@@ -71,6 +71,7 @@ jobs:
         env:
           PACKAGE_ARCH: arm64
           MACHO_SUBTYPE: '0x0'
+          EXPECT_FAT: 'false'
         run: |
           set -e
           for PACKAGE in "$RUNNER_TEMP"/ios27-rootless/iOS27Animations/packages/*.deb; do

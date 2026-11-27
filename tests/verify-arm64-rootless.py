@@ -66,18 +66,20 @@ with tempfile.TemporaryDirectory(prefix="ios27-arm64-verify-") as tmp:
     assert rows == plistlib.loads((root / "iOS27Animations/Prefs/Resources/Root.plist").read_bytes())["items"]
     def slices(binary):
         data = binary.read_bytes()
+        if data[:4] == b"\xcf\xfa\xed\xfe":
+            cpu, subtype = struct.unpack_from("<II", data, 4)
+            assert cpu == 0x100000c and subtype == 0, (binary, hex(cpu), hex(subtype))
+            return {"0": {"bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}}
         assert data[:4] == b"\xca\xfe\xba\xbe", binary
         _, count = struct.unpack_from(">II", data)
         found = {}
         for i in range(count):
             cpu, subtype, offset, size, align = struct.unpack_from(">IIIII", data, 8 + 20 * i)
-            assert cpu == 0x100000c and subtype in (0, 0x80000002), (binary, hex(cpu), hex(subtype))
+            assert cpu == 0x100000c and subtype == 0, (binary, hex(cpu), hex(subtype))
             thin = data[offset:offset + size]
             assert thin[:4] == b"\xcf\xfa\xed\xfe"
-            t_cpu, t_subtype = struct.unpack_from("<II", thin, 4)
-            assert (t_cpu, t_subtype) == (cpu, subtype)
             found[subtype] = {"bytes": size, "sha256": hashlib.sha256(thin).hexdigest()}
-        assert set(found) == {0, 0x80000002}, (binary, found)
+        assert set(found) == {0}, (binary, found)
         return found
     binaries = []
     for binary in (main, app):

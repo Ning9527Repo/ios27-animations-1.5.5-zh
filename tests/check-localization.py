@@ -6,7 +6,7 @@ original=root/'iOS27Animations'
 import os
 expected_scheme = os.environ.get('PACKAGE_SCHEME', 'roothide')
 assert f'THEOS_PACKAGE_SCHEME = {expected_scheme}' in (original/'Makefile').read_text()
-expected_arch_line = 'ARCHS = arm64 arm64e' if expected_scheme == 'rootless' else 'ARCHS = arm64e'
+expected_arch_line = 'ARCHS = arm64' if expected_scheme == 'rootless' else 'ARCHS = arm64e'
 assert expected_arch_line in (original/'Makefile').read_text()
 assert expected_arch_line in (prefs/'Makefile').read_text()
 assert sorted(p.name for p in (prefs/'Resources').glob('*.lproj')) == ['zh-Hans.lproj']
