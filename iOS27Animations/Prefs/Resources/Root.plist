@@ -10,13 +10,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>Enabled</string>
 			<key>label</key>
@@ -40,17 +40,47 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<false/>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>LiquidSwitchEnabled</string>
 			<key>label</key>
 			<string>Liquid switch</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>label</key>
+			<string>启用通知横幅动画</string>
+			<key>key</key>
+			<string>BannerAnimationEnabled</string>
+			<key>defaults</key>
+			<string>com.ning.ios2627anims</string>
+			<key>default</key>
+			<false/>
+			<key>PostNotification</key>
+			<string>com.ning.ios2627anims/changed</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>CG27PageController</string>
+			<key>isController</key>
+			<true/>
+			<key>label</key>
+			<string>通知横幅动画</string>
+			<key>plist</key>
+			<string>BannerAnimation</string>
 		</dict>
 		<dict>
 			<key>cell</key>

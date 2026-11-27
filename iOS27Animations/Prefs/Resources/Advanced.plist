@@ -16,13 +16,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSliderCell</string>
 			<key>default</key>
 			<real>1.0</real>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>Intensity</string>
 			<key>max</key>
@@ -34,13 +34,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>GestureBounce</string>
 			<key>label</key>
@@ -54,13 +54,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSliderCell</string>
 			<key>default</key>
 			<real>1.0</real>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>FlyStrength</string>
 			<key>max</key>
@@ -78,13 +78,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSliderCell</string>
 			<key>default</key>
 			<real>1.0</real>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>GlobalSlow</string>
 			<key>max</key>

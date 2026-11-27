@@ -6,7 +6,7 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 NEW = 'com.ning.ios2627anims'
-OLD = 'com.bazik1337.ios2627anims'
+# Old package identifier is retained only in Conflicts/Replaces so dpkg can upgrade it.
 control = dict(line.split(': ', 1) for line in
                (ROOT / 'iOS27Animations/control').read_text().splitlines() if ': ' in line)
 assert control['Package'] == NEW
@@ -24,25 +24,31 @@ assert control['Version']==expected_ver
 assert 'Icon' not in control
 for field in ('Conflicts', 'Replaces'):
     entries = [x.strip() for x in control[field].split(',')]
-    assert OLD in entries and NEW not in entries, (field, entries)
+    assert NEW not in entries, (field, entries)
 expected = f"{control['Package']}_{control['Version']}_{control['Architecture']}.deb"
 assert expected == f"com.ning.ios2627anims_{expected_ver}_{expected_arch}.deb"
-# Do not blindly replace the legacy preferences namespace: existing settings
-# must remain readable by the unchanged Settings and runtime implementation.
+# Package and preference namespace are both owned by Ning; old package IDs are
+# asserted only as upgrade metadata in the dedicated package verifier.
 res = ROOT / 'iOS27Animations/Prefs/Resources'
-for page in ('Root', 'AppAnimations', 'NotificationCenter', 'Advanced'):
+for page in ('Root', 'AppAnimations', 'NotificationCenter', 'Advanced', 'BannerAnimation'):
     rows = plistlib.loads((res / (page + '.plist')).read_bytes())['items']
     for row in rows:
         if 'key' in row:
-            expected_domain = 'com.ning.keyboardglass' if row['key']=='KeyboardGlassEnabled' else OLD
-            expected_notification = 'com.ning.keyboardglass/ReloadPrefs' if row['key']=='KeyboardGlassEnabled' else OLD + '/changed'
+            expected_domain = 'com.ning.keyboardglass' if row['key']=='KeyboardGlassEnabled' else NEW
+            expected_notification = 'com.ning.keyboardglass/ReloadPrefs' if row['key']=='KeyboardGlassEnabled' else NEW + '/changed'
             assert row['defaults'] == expected_domain
             assert row['PostNotification'] == expected_notification
 header = (ROOT / 'shared/LiquidSwitchConfiguration.h').read_text()
-assert f'CG27LSDomain = @"{OLD}";' in header
-assert f'CG27LSChanged = @"{OLD}/changed";' in header
+assert 'CG27LSDomain = @"com.ning.ios2627anims";' in header
+assert 'CG27LSChanged = @"com.ning.ios2627anims/changed";' in header
+controller = (ROOT / 'iOS27Animations/Prefs/CG27RootListController.m').read_text()
+assert 'CG27MigrateLegacyPreferences' not in controller
+runtime = (ROOT / 'iOS27Animations/Tweak.x').read_text()
+banner_runtime = (ROOT / 'iOS27Animations/BannerFeature/NB27Banner.m').read_text()
+assert 'com.bazik1337.ios2627anims' not in runtime + banner_runtime + controller + header
+assert 'com.ning.27banneranimation' not in runtime + banner_runtime + controller + header
 workflow = (ROOT / '.github/workflows/build-roothide.yml').read_text()
-assert f'usr/share/doc/{OLD}/' not in workflow
+assert all(f'usr/share/doc/{NEW}/Theseus' in step for step in workflow.splitlines() if 'usr/share/doc/' in step)
 assert workflow.count(f'usr/share/doc/{NEW}/Theseus') == 4
 assert 'python3 tests/check-package-identity.py' in workflow
 assert not re.search(r'^\s+(push|pull_request|schedule):', workflow, re.M)
@@ -50,4 +56,4 @@ rootless = (ROOT / '.github/workflows/build-arm64-rootless.yml').read_text()
 assert 'PACKAGE_SCHEME: rootless' in rootless and 'PACKAGE_ARCH: iphoneos-arm64' in rootless
 assert 'verify-arm64-rootless.py' in rootless and 'MACHO_SUBTYPE:' in rootless
 print('PASS package identity: Sileo name iOS 27 动画; Author/Maintainer Ning; ' + expected)
-print('PASS legacy package Conflicts/Replaces; saved preferences and notification namespace retained')
+print('PASS old package ID is limited to upgrade metadata; all preference domains use the new namespace')

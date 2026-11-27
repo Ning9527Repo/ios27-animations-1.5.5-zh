@@ -19,12 +19,18 @@ enabled = next(x for x in rows if x.get('key') == 'Enabled')
 liquid = next(x for x in rows if x.get('key') == 'LiquidSwitchEnabled')
 app = next(x for x in rows if x.get('plist') == 'AppAnimations')
 keyboard = next(x for x in rows if x.get('plist') == 'KeyboardGlass')
+banner_toggle = {'cell':'PSSwitchCell','label':'启用通知横幅动画','key':'BannerAnimationEnabled',
+                 'defaults':'com.ning.ios2627anims','default':False,
+                 'PostNotification':'com.ning.ios2627anims/changed'}
+banner_link = {'cell':'PSLinkCell','detail':'CG27PageController','isController':True,
+               'label':'通知横幅动画','plist':'BannerAnimation'}
 kg_toggle = {'cell':'PSSwitchCell','label':'Enabled','key':'KeyboardGlassEnabled',
              'defaults':'com.ning.keyboardglass','default':True,
              'PostNotification':'com.ning.keyboardglass/ReloadPrefs'}
 main['items'] = [
     {'cell':'PSGroupCell'}, enabled, app,
     {'cell':'PSGroupCell'}, liquid,
+    {'cell':'PSGroupCell'}, banner_toggle, banner_link,
     {'cell':'PSGroupCell'}, kg_toggle, keyboard,
     {'cell':'PSGroupCell'},
     next(x for x in rows if x.get('action') == 'resetSettings'),

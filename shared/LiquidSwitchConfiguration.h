@@ -7,8 +7,8 @@
 #include <stdlib.h>
 
 static NSString *const CG27LSConfigurationPath = @"/var/mobile/Library/Accessibility/iOS27Animations-switch.plist";
-static NSString *const CG27LSDomain = @"com.bazik1337.ios2627anims";
-static NSString *const CG27LSChanged = @"com.bazik1337.ios2627anims/changed";
+static NSString *const CG27LSDomain = @"com.ning.ios2627anims";
+static NSString *const CG27LSChanged = @"com.ning.ios2627anims/changed";
 
 static inline NSError *CG27LSError(NSInteger code, NSString *message) {
     return [NSError errorWithDomain:@"iOS27Animations.SwitchConfiguration" code:code

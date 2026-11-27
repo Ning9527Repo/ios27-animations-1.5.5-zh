@@ -1,0 +1,9 @@
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+
+The original GlassSuiteX package identified a CC BY-NC 4.0 attribution for
+material associated with the upstream liquidass project. This file records
+that notice for attribution context only. This project does not redistribute
+that upstream implementation or its assets.
+
+Upstream reference:
+https://github.com/winaviation-tweaks/liquidass

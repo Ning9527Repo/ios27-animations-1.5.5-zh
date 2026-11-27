@@ -20,7 +20,7 @@ filter_text=(root/'iOS27Animations/iOS2627Anims.plist').read_text()
 assert set(re.findall(r'"(com\.apple\.[^"]+)"',filter_text))=={'com.apple.springboard','com.apple.UIKit','com.apple.Preferences'}
 switch_ctor=hooks[hooks.index('__attribute__((constructor)) static void NGInitialize(void)'):]
 assert 'com.apple.Preferences' not in switch_ctor
-assert 'com.bazik1337.ios2627anims.prefs' in switch_ctor
+assert 'com.ning.ios2627anims.prefs' in switch_ctor
 keyboard=(root/'iOS27Animations/KeyboardGlass/KeyboardBackground.m').read_text()
 keyboard_ctor=keyboard[keyboard.index('__attribute__((constructor)) static void NGInstall(void)'):]
 assert 'com.apple.Preferences' not in keyboard_ctor
@@ -35,7 +35,18 @@ assert 'Library/Application Support/iOS27Animations/TheseusSwitchResources.bundl
 root_plist=plistlib.loads((root/'iOS27Animations/Prefs/Resources/Root.plist').read_bytes())
 rows=root_plist['items']; switch=[x for x in rows if x.get('key')=='LiquidSwitchEnabled']
 assert len(switch)==1 and switch[0]['cell']=='PSSwitchCell' and switch[0]['default'] is False
-assert switch[0]['defaults']=='com.bazik1337.ios2627anims' and switch[0]['PostNotification']=='com.bazik1337.ios2627anims/changed'
+assert switch[0]['defaults']=='com.ning.ios2627anims' and switch[0]['PostNotification']=='com.ning.ios2627anims/changed'
+banner=(root/'iOS27Animations/Prefs/Resources/BannerAnimation.plist').read_bytes()
+banner_rows=plistlib.loads(banner)['items']
+assert [x['key'] for x in banner_rows if 'key' in x]==['BannerElasticity','BannerTransitionScale','BannerDwellScale']
+assert all(x['defaults']=='com.ning.ios2627anims' for x in banner_rows if 'key' in x)
+assert '$(BANNER_DIR)/NB27Banner.m' in mk and '$(BANNER_DIR)/NB27Compact.m' in mk
+assert 'TWEAK_NAME = iOS2627Anims' in mk and '$(BANNER_DIR)/NB27Banner.m' in mk
+resource_builder=(root/'tools/prepare-switch-resources.py').read_text()
+assert "CFBundleIdentifier':'com.ning.ios2627anims.switchresources" in resource_builder
+root_links=[x for x in rows if x.get('cell')=='PSLinkCell']
+assert any(x.get('plist')=='BannerAnimation' for x in root_links)
+assert sum(x.get('key')=='BannerAnimationEnabled' for x in rows)==1
 text=(root/'iOS27Animations/Prefs/Resources/zh-Hans.lproj/Root.strings').read_text()
 assert '"Liquid switch" =' in text
 wf=(root/'.github/workflows/build-roothide.yml').read_text()

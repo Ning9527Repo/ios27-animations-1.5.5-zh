@@ -9,7 +9,7 @@ typedef void (*NGHookFunction)(Class, SEL, IMP, IMP *);
 static NGHookFunction gNGHook;
 // Preference key: LiquidSwitchEnabled; absent/unreadable updates retain this cache.
 static _Atomic(BOOL) gNGSwitchFeatureEnabled = NO;
-static NSString *const kNGSwitchChanged = @"com.bazik1337.ios2627anims/changed";
+static NSString *const kNGSwitchChanged = @"com.ning.ios2627anims/changed";
 
 BOOL NGSwitchFeatureEnabled(void) {
     return atomic_load_explicit(&gNGSwitchFeatureEnabled, memory_order_acquire);
@@ -148,7 +148,7 @@ static void NGInstallClockReuseHooks(void) {
 
 #ifndef NG_TESTING
 __attribute__((constructor)) static void NGInitialize(void) {
-    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.bazik1337.ios2627anims.prefs"]) return;
+    if ([NSBundle.mainBundle.bundleIdentifier isEqualToString:@"com.ning.ios2627anims.prefs"]) return;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, NGSwitchPreferenceChanged,

@@ -6,7 +6,7 @@
 #include <spawn.h>
 #include <unistd.h>
 
-static NSString *const kCG27Domain = @"com.bazik1337.ios2627anims";
+static NSString *const kCG27Domain = @"com.ning.ios2627anims";
 
 @interface PSListController (CG27)
 - (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target bundle:(NSBundle *)bundle;
@@ -21,7 +21,7 @@ static void CG27PublishLiquidSwitchPreference(void) {
 }
 
 static NSString *CG27L(NSString *key) {
-    return [[NSBundle bundleWithIdentifier:@"com.bazik1337.ios2627anims.prefs"] localizedStringForKey:key value:key table:@"Root"];
+    return [[NSBundle bundleWithIdentifier:@"com.ning.ios2627anims.prefs"] localizedStringForKey:key value:key table:@"Root"];
 }
 
 static UIColor *CG27Tint(void) {
@@ -60,6 +60,12 @@ static void CG27ApplySliderTint(UIView *view) {
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
     [super setPreferenceValue:value specifier:specifier];
     NSString *key=[specifier propertyForKey:@"key"];
+    if ([key isEqualToString:@"BannerAnimationEnabled"] || [key hasPrefix:@"Banner"]) {
+        CFPreferencesAppSynchronize((__bridge CFStringRef)kCG27Domain);
+        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
+            (__bridge CFStringRef)kCG27BannerChanged, NULL, NULL, YES);
+        return;
+    }
     if ([key isEqualToString:@"KeyboardGlassEnabled"]) {
         CFPreferencesSetAppValue(CFSTR("KeyboardGlassEnabled"), (__bridge CFPropertyListRef)@([value boolValue]), (__bridge CFStringRef)NGDomain);
         CFPreferencesAppSynchronize((__bridge CFStringRef)NGDomain);
@@ -151,7 +157,7 @@ static void CG27ApplySliderTint(UIView *view) {
     if (!CG27LSPublishValue(NO, &error))
         NSLog(@"[iOS27Switch] Reset publish failed: %@:%ld", error.domain, (long)error.code);
     CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),
-                                         CFSTR("com.bazik1337.ios2627anims/changed"), NULL, NULL, YES);
+                                         (__bridge CFStringRef)kCG27BannerChanged, NULL, NULL, YES);
     [self reloadSpecifiers];
 }
 

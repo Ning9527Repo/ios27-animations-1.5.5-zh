@@ -16,7 +16,7 @@ assert 'PSListController._specifiers' in stub.read_text()
 assert 'PSTableCell' in stub.read_text()
 assert 'PSSpecifier' in stub.read_text()
 assert '/System/Library/PrivateFrameworks/Preferences.framework/Preferences' in stub.read_text()
-for page in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGlass'):
+for page in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGlass','BannerAnimation'):
     r=prefs/'Resources'
     data=plistlib.loads((r/(page+'.plist')).read_bytes())
     s=(r/'zh-Hans.lproj'/(page+'.strings')).read_text()

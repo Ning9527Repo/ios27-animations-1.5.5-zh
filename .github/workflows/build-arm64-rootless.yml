@@ -38,6 +38,10 @@ jobs:
           python3 iOS27Animations/SwitchFeature/tests/geometry-policy.py
           python3 iOS27Animations/SwitchFeature/tests/clock-replay-policy.py
           python3 iOS27Animations/SwitchFeature/tests/memory-cache-policy.py
+          for test in motion reference_motion compact clock; do
+            cc -std=c11 -O2 -Wall -Wextra -Werror "iOS27Animations/BannerFeature/tests/test_${test}.c" -lm -o "$RUNNER_TEMP/banner-${test}-test"
+            "$RUNNER_TEMP/banner-${test}-test"
+          done
       - name: Install native rootless toolchain
         run: |
           brew install dpkg ldid xz

@@ -51,8 +51,10 @@ with tempfile.TemporaryDirectory() as tmp:
     assert sorted(x.relative_to(d).as_posix() for x in d.rglob('*.dylib'))==['Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib']
     switch_rows=plistlib.loads((prefs/'Root.plist').read_bytes())['items']
     assert sum(x.get('key')=='LiquidSwitchEnabled' for x in switch_rows)==1
-    assert switch_rows[6].get('key')=='KeyboardGlassEnabled' and switch_rows[6].get('label')=='Enabled'
-    assert switch_rows[6].get('defaults')=='com.ning.keyboardglass'
+    assert switch_rows[6].get('key')=='BannerAnimationEnabled'
+    assert switch_rows[7].get('plist')=='BannerAnimation'
+    assert switch_rows[9].get('key')=='KeyboardGlassEnabled' and switch_rows[9].get('label')=='Enabled'
+    assert switch_rows[9].get('defaults')=='com.ning.keyboardglass'
     for name in ('LICENSE','NOTICE','vendor-manifest.json'):
         assert (d/'usr/share/doc/com.ning.ios2627anims/Theseus'/name).is_file()
     entry=plistlib.loads((d/'Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').read_bytes())['entry']
@@ -65,9 +67,10 @@ with tempfile.TemporaryDirectory() as tmp:
         assert hashlib.sha256(raw).hexdigest()==expected['sha256'],name
     assert not any(x.startswith('usr/share/icons/') for x in files),'unexpected Sileo package artwork'
     assert switch_rows==plistlib.loads((root/'iOS27Animations/Prefs/Resources/Root.plist').read_bytes())['items']
-    for page in ('Root','AppAnimations','NotificationCenter','Advanced'):
+    for page in ('Root','AppAnimations','NotificationCenter','Advanced','BannerAnimation'):
         assert (prefs/'zh-Hans.lproj'/(page+'.strings')).is_file()
     assert (prefs/'AppAnimations.plist').is_file() and (prefs/'NotificationCenter.plist').is_file()
+    assert (prefs/'BannerAnimation.plist').is_file()
     app_rows=plistlib.loads((prefs/'AppAnimations.plist').read_bytes())['items']
     assert [x.get('label') for x in app_rows if x.get('cell')=='PSGroupCell']==[None,'Notification Center','Advanced']
     assert not any(x.get('cell')=='PSLinkCell' for x in app_rows)

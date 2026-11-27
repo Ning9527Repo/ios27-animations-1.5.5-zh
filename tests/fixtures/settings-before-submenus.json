@@ -2,100 +2,100 @@
   "baseline_commit": "5c9268432c06e461edc4c31457078f38eff954db",
   "controls": {
     "Enabled": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSwitchCell",
       "default": false,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "Enabled",
       "label": "Enabled"
     },
     "AppAnimations": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSwitchCell",
       "default": true,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "AppAnimations",
       "label": "iOS 27 animation"
     },
     "OpenSpeed": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSliderCell",
       "default": 1.0,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "OpenSpeed",
       "max": 2.0,
       "min": 0.5,
       "showValue": true
     },
     "CloseSpeed": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSliderCell",
       "default": 1.0,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "CloseSpeed",
       "max": 2.0,
       "min": 0.5,
       "showValue": true
     },
     "IconFlyIn": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSwitchCell",
       "default": true,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "IconFlyIn",
       "label": "Icons fly in"
     },
     "ClearSheet": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSwitchCell",
       "default": true,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "ClearSheet",
       "label": "No blur behind"
     },
     "Intensity": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSliderCell",
       "default": 1.0,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "Intensity",
       "max": 2.0,
       "min": 0.0,
       "showValue": true
     },
     "GestureBounce": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSwitchCell",
       "default": true,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "GestureBounce",
       "label": "Bounce into icon"
     },
     "FlyStrength": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSliderCell",
       "default": 1.0,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "FlyStrength",
       "max": 3.0,
       "min": 0.0,
       "showValue": true
     },
     "GlobalSlow": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSliderCell",
       "default": 1.0,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "GlobalSlow",
       "max": 5.0,
       "min": 1.0,
       "showValue": true
     },
     "LiquidSwitchEnabled": {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSwitchCell",
       "default": false,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "LiquidSwitchEnabled",
       "label": "Liquid switch"
     }
@@ -105,10 +105,10 @@
       "cell": "PSGroupCell"
     },
     {
-      "PostNotification": "com.bazik1337.ios2627anims/changed",
+      "PostNotification": "com.ning.ios2627anims/changed",
       "cell": "PSSwitchCell",
       "default": false,
-      "defaults": "com.bazik1337.ios2627anims",
+      "defaults": "com.ning.ios2627anims",
       "key": "Enabled",
       "label": "Enabled"
     }
@@ -176,10 +176,10 @@
     "iOS27Animations/Prefs/CG27RootListController.m": "aa68cf837a77a672d91c9f05e8c6e69322876a228795e679cc47a557bbf8edf6"
   },
   "switch_control": {
-    "PostNotification": "com.bazik1337.ios2627anims/changed",
+    "PostNotification": "com.ning.ios2627anims/changed",
     "cell": "PSSwitchCell",
     "default": false,
-    "defaults": "com.bazik1337.ios2627anims",
+    "defaults": "com.ning.ios2627anims",
     "key": "LiquidSwitchEnabled",
     "label": "Liquid switch"
   },

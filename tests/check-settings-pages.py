@@ -4,22 +4,29 @@ import hashlib,json,pathlib,plistlib,re
 root=pathlib.Path(__file__).resolve().parents[1]
 res=root/'iOS27Animations/Prefs/Resources'
 fixture=json.loads((root/'tests/fixtures/settings-before-submenus.json').read_text())
-pages={name:plistlib.loads((res/(name+'.plist')).read_bytes()) for name in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGlass')}
+pages={name:plistlib.loads((res/(name+'.plist')).read_bytes()) for name in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGlass','BannerAnimation')}
 main=pages['Root']['items']
 assert main[0]=={'cell':'PSGroupCell'}
 assert main[1]['key']=='Enabled' and main[2]['plist']=='AppAnimations'
 assert main[3]=={'cell':'PSGroupCell'} and main[4]['key']=='LiquidSwitchEnabled'
 assert main[5]=={'cell':'PSGroupCell'}
-assert main[6]['key']=='KeyboardGlassEnabled' and main[6]['label']=='Enabled' and main[6]['default'] is True
-assert main[7]=={'cell':'PSLinkCell','detail':'CG27KeyboardGlassController','isController':True,'label':'Keyboard Glass','plist':'KeyboardGlass'}
-assert main[8:]==[{'cell':'PSGroupCell'}, {'action':'resetSettings','cell':'PSButtonCell','label':'Reset settings'}, {'action':'respring','cell':'PSButtonCell','label':'Respring'}]
+assert main[6]['key']=='BannerAnimationEnabled' and main[6]['default'] is False
+assert main[7]=={'cell':'PSLinkCell','detail':'CG27PageController','isController':True,'label':'通知横幅动画','plist':'BannerAnimation'}
+assert main[8]=={'cell':'PSGroupCell'}
+assert main[9]['key']=='KeyboardGlassEnabled' and main[9]['label']=='Enabled' and main[9]['default'] is True
+assert main[10]['cell']=='PSLinkCell' and main[10]['plist']=='KeyboardGlass'
+assert main[11:]==[{'cell':'PSGroupCell'}, {'action':'resetSettings','cell':'PSButtonCell','label':'Reset settings'}, {'action':'respring','cell':'PSButtonCell','label':'Respring'}]
 links=[x for x in main if x.get('cell')=='PSLinkCell']
-assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Keyboard Glass','KeyboardGlass')]
+assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('通知横幅动画','BannerAnimation'),('Keyboard Glass','KeyboardGlass')]
+assert [x['key'] for x in pages['BannerAnimation']['items'] if 'key' in x]==['BannerElasticity','BannerTransitionScale','BannerDwellScale']
 app_rows=pages['AppAnimations']['items']
 assert not any(x.get('cell')=='PSLinkCell' for x in app_rows), 'nested third-level links remain'
 assert [x.get('label') for x in app_rows if x.get('cell')=='PSGroupCell']==[None,'Notification Center','Advanced']
 assert [x['key'] for x in app_rows if 'key' in x]==['AppAnimations','OpenSpeed','CloseSpeed','IconFlyIn','ClearSheet','Intensity','GestureBounce','FlyStrength','GlobalSlow']
-assert {x['key'] for x in main if 'key' in x}=={'Enabled','LiquidSwitchEnabled','KeyboardGlassEnabled'}
+assert {x['key'] for x in main if 'key' in x}=={'Enabled','LiquidSwitchEnabled','BannerAnimationEnabled','KeyboardGlassEnabled'}
+assert sum(x.get('cell')=='PSSwitchCell' and x.get('key')=='BannerAnimationEnabled' for x in main)==1
+assert (root/'iOS27Animations/Makefile').read_text().count('$(BANNER_DIR)/NB27Banner.m')==1
+assert not list((root/'iOS27Animations').glob('**/NB27*.dylib'))
 assert not (res/'en.lproj').exists() and not (res/'ru.lproj').exists()
 assert sum(x.get('label')=='Keyboard Glass' and x.get('plist')=='KeyboardGlass' for x in links)==1
 assert sum(bool(x.get('entry')) for x in main)==0
@@ -56,8 +63,13 @@ assert not (root/'iOS27Animations/Prefs/Resources/KeyboardGlassEntry.plist').exi
 assert not list((root/'iOS27Animations/Prefs').glob('KeyboardGlass*.dylib'))
 
 expected={'AppAnimations':['AppAnimations','OpenSpeed','CloseSpeed','IconFlyIn','ClearSheet','Intensity','GestureBounce','FlyStrength','GlobalSlow']}
-controls={x['key']:x for name,page in pages.items() if name!='KeyboardGlass' for x in page['items'] if 'key' in x and x['key']!='KeyboardGlassEnabled'}
-assert controls==fixture['controls'], 'preference controls, defaults, domains or ranges changed'
+controls={x['key']:x for name,page in pages.items() if name not in ('KeyboardGlass','BannerAnimation') for x in page['items'] if 'key' in x and x['key'] not in ('KeyboardGlassEnabled','BannerAnimationEnabled')}
+legacy_controls={key:dict(value) for key,value in fixture['controls'].items()}
+for value in legacy_controls.values():
+    value['defaults']='com.ning.ios2627anims'
+    value['PostNotification']='com.ning.ios2627anims/changed'
+assert controls==legacy_controls, 'preference controls, defaults, domains or ranges changed'
+assert {x['key'] for x in pages['BannerAnimation']['items'] if 'key' in x}=={'BannerElasticity','BannerTransitionScale','BannerDwellScale'}
 for name,keys in expected.items():
     rows=pages[name]['items']
     assert rows[0]=={'cell':'PSGroupCell'}

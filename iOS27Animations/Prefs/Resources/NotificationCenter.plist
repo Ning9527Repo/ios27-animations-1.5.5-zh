@@ -10,13 +10,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>IconFlyIn</string>
 			<key>label</key>
@@ -24,13 +24,13 @@
 		</dict>
 		<dict>
 			<key>PostNotification</key>
-			<string>com.bazik1337.ios2627anims/changed</string>
+			<string>com.ning.ios2627anims/changed</string>
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
 			<true/>
 			<key>defaults</key>
-			<string>com.bazik1337.ios2627anims</string>
+			<string>com.ning.ios2627anims</string>
 			<key>key</key>
 			<string>ClearSheet</string>
 			<key>label</key>

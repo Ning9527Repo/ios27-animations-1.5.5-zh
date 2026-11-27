@@ -16,6 +16,14 @@
 - Logos-анимации остаются только в SpringBoard; UIKit-фильтр включает ту же библиотеку в приложениях, чтобы там работал переключатель.
 - Оригинальные лицензия, уведомление и манифест Theseus сохранены в `iOS27Animations/SwitchFeature/Vendor`.
 
+## Notification Banner Animation
+
+- The reconstructed iOS 15–17 banner motion is compiled into the existing `iOS2627Anims.dylib`; there is no separate banner library, PreferenceBundle or package.
+- The Settings home card contains one independent enable switch and one link to the banner detail page. Elasticity, transition duration and dwell duration remain on that detail page.
+- Runtime settings use only `com.ning.ios2627anims` and `com.ning.ios2627anims/changed`. No legacy preference domain is read.
+- `iOS27Animations/BannerFeature/tests` exercises production motion, reference geometry, compact-line state and clock parsing. These tests are static/native C coverage, not UIKit or device validation.
+- The upstream attribution and non-commercial notice are retained in `BannerFeature/NOTICE.md` and `BannerFeature/LICENSE-CC-BY-NC-4.0.txt`.
+
 ## Установка
 
 1. Sileo → Источники → «+» → `https://repo.ba31k.com/`

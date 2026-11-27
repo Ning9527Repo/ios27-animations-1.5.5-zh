@@ -62,7 +62,10 @@ with tempfile.TemporaryDirectory(prefix="ios27-arm64-verify-") as tmp:
     entry = plistlib.loads((dest / "var/jb/Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist").read_bytes())["entry"]
     assert entry["label"] == "iOS 27 动画" and entry["icon"] == "icon.png" and entry["isController"] is True
     rows = plistlib.loads((prefs / "Root.plist").read_bytes())["items"]
-    assert rows == plistlib.loads((root / "iOS27Animations/Prefs/Resources/Root.plist").read_bytes())["items"]
+    assert rows[6]['key']=='BannerAnimationEnabled' and rows[7]['plist']=='BannerAnimation'
+    banner_rows = plistlib.loads((prefs / "BannerAnimation.plist").read_bytes())["items"]
+    assert [x["key"] for x in banner_rows if "key" in x] == ["BannerElasticity", "BannerTransitionScale", "BannerDwellScale"]
+    assert (prefs / "zh-Hans.lproj" / "BannerAnimation.strings").is_file()
     def slices(binary):
         data = binary.read_bytes()
         if data[:4] == b"\xcf\xfa\xed\xfe":

@@ -99,7 +99,7 @@ static CFPropertyListRef CG27CopyPref(CFStringRef key) {
     if (gCG27PrefsLoaded < 0 || now - gCG27PrefsLoaded > 0.5) { CFDictionaryRemoveAllValues(cache); gCG27PrefsLoaded = now; }
     CFPropertyListRef v = CFDictionaryGetValue(cache, key);
     if (!v) {
-        v = CFPreferencesCopyAppValue(key, CFSTR("com.bazik1337.ios2627anims"));
+        v = CFPreferencesCopyAppValue(key, CFSTR("com.ning.ios2627anims"));
         CFDictionarySetValue(cache, key, v ?: (CFPropertyListRef)kCFNull);
         if (v) CFRelease(v);
         v = CFDictionaryGetValue(cache, key);
@@ -1543,13 +1543,13 @@ static id CG27AnimationSettings(void) {
     return [animation isKindOfClass:%c(SBFluidSwitcherAnimationSettings)] ? animation : nil;
 }
 
-static NSString *const kCG27PrefsChanged = @"com.bazik1337.ios2627anims/changed";
+static NSString *const kCG27PrefsChanged = @"com.ning.ios2627anims/changed";
 
 static void CG27PrefsChanged(__unused CFNotificationCenterRef center, __unused void *observer, __unused CFStringRef name,
                              __unused const void *object, __unused CFDictionaryRef info) {
     dispatch_async(dispatch_get_main_queue(), ^{
         if (!gCG27RuntimeReady) return;
-        CFPreferencesAppSynchronize(CFSTR("com.bazik1337.ios2627anims"));
+        CFPreferencesAppSynchronize(CFSTR("com.ning.ios2627anims"));
         os_unfair_lock_lock(&gCG27PrefsLock);
         gCG27PrefsLoaded = -1;
         os_unfair_lock_unlock(&gCG27PrefsLock);

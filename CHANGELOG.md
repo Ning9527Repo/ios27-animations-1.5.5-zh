@@ -58,7 +58,7 @@ The global source-hosted scheme below failed real-device feedback and is not ret
 - Страница в Настройках «iOS 27 Animations» (нужен PreferenceLoader).
 - Отдельные переключатели: «Открытие и закрытие» (`AppAnimations`), «Эффект джина» (`Genie`),
   «Анимация шторки» (`IconFlyIn`). Общий выключатель `Enabled` остался.
-- Настройки применяются без респринга (уведомление `com.bazik1337.ios2627anims/changed`).
+- Настройки применяются без респринга (уведомление `com.ning.ios2627anims/changed`).
 
 ## 1.4.7 — 2026-10-10
 
