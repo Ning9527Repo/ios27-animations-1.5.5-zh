@@ -19,8 +19,6 @@ jobs:
           PACKAGE_SCHEME: roothide
           PACKAGE_ARCH: iphoneos-arm64e
           PACKAGE_VERSION: 0.3.3
-          PACKAGE_SCHEME: roothide
-          PACKAGE_ARCH: iphoneos-arm64e
           EXPECTED_ARCHS: arm64e
         run: |
           python3 tests/check-localization.py
