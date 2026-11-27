@@ -2,3 +2,11 @@
 "iOS 27 animation" = "应用动画开关";
 "Opening speed" = "打开速度";
 "Closing speed" = "关闭速度";
+"Notification Center" = "通知中心";
+"Advanced" = "高级设置";
+"Icons fly in" = "图标飞入";
+"No blur behind" = "关闭背景模糊";
+"Window bend" = "窗口弯曲程度";
+"Bounce into icon" = "收回图标时回弹";
+"Icon fly-in distance" = "图标飞入距离";
+"Slow motion" = "慢动作倍率";

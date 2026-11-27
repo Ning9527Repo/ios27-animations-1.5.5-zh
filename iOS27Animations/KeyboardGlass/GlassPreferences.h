@@ -72,6 +72,7 @@ static inline NSDictionary *NGValidateSnapshot(id envelope) {
         ![config[@"SystemAlpha"] isKindOfClass:NSNumber.class] ||
         ![config[@"Overrides"] isKindOfClass:NSDictionary.class]) return nil;
     // Optional for compatibility with snapshots published by 0.1.16 and earlier.
+    if (config[@"KeyboardGlassEnabled"] && ![config[@"KeyboardGlassEnabled"] isKindOfClass:NSNumber.class]) return nil;
     if (config[@"HideCandidateControls"] && ![config[@"HideCandidateControls"] isKindOfClass:NSNumber.class]) return nil;
     if (config[@"HideCandidateHighlight"] && ![config[@"HideCandidateHighlight"] isKindOfClass:NSNumber.class]) return nil;
     if (config[@"MaterialBlurEnabled"] && ![config[@"MaterialBlurEnabled"] isKindOfClass:NSNumber.class]) return nil;
@@ -135,7 +136,9 @@ static inline BOOL NGPublishGlobalSnapshot(NSError **error) {
     id highlight=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("HideCandidateHighlight"),(__bridge CFStringRef)NGDomain));
     id blur=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("MaterialBlurEnabled"),(__bridge CFStringRef)NGDomain));
     id strength=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("MaterialBlurStrength"),(__bridge CFStringRef)NGDomain));
-    NSDictionary *config=@{@"MaterialBlurEnabled":@([blur isKindOfClass:NSNumber.class] && [blur boolValue]),
+    id enabled=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("KeyboardGlassEnabled"),(__bridge CFStringRef)NGDomain));
+    NSDictionary *config=@{@"KeyboardGlassEnabled":@(![enabled isKindOfClass:NSNumber.class] || [enabled boolValue]),
+        @"MaterialBlurEnabled":@([blur isKindOfClass:NSNumber.class] && [blur boolValue]),
         @"MaterialBlurStrength":@(NGNumber(strength,0.5,0,1)),@"Skin":NGNormalizeSkin(skin),
         @"HideCandidateHighlight":@([highlight isKindOfClass:NSNumber.class] && [highlight boolValue]),
         @"HideCandidateControls":@([hide isKindOfClass:NSNumber.class] && [hide boolValue]),

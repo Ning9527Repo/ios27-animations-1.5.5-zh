@@ -34,8 +34,10 @@ for page in ('Root', 'AppAnimations', 'NotificationCenter', 'Advanced'):
     rows = plistlib.loads((res / (page + '.plist')).read_bytes())['items']
     for row in rows:
         if 'key' in row:
-            assert row['defaults'] == OLD
-            assert row['PostNotification'] == OLD + '/changed'
+            expected_domain = 'com.ning.keyboardglass' if row['key']=='KeyboardGlassEnabled' else OLD
+            expected_notification = 'com.ning.keyboardglass/ReloadPrefs' if row['key']=='KeyboardGlassEnabled' else OLD + '/changed'
+            assert row['defaults'] == expected_domain
+            assert row['PostNotification'] == expected_notification
 header = (ROOT / 'shared/LiquidSwitchConfiguration.h').read_text()
 assert f'CG27LSDomain = @"{OLD}";' in header
 assert f'CG27LSChanged = @"{OLD}/changed";' in header

@@ -26,22 +26,38 @@ static UIImage *NGCachedOutline;
 static NSDictionary *NGValues;
 static NSString *NGSkin;
 static CGFloat NGSystemAlpha = 1.0;
+static BOOL NGKeyboardGlassEnabled = YES;
 static BOOL NGHideCandidateControls;
 static BOOL NGHideCandidateHighlight;
 static void NGRefreshCandidateHighlight(void);
 static BOOL NGMaterialBlurEnabled;
 static CGFloat NGMaterialBlurStrength=0.5;
 static void NGRefreshCandidateControls(void);
+static void NGRestoreCandidateControls(UIView *scope);
+static void NGRestoreHighlightViews(UIView *scope);
 static NSHashTable<UIVisualEffectView *> *NGHosts;
+static void NGRestoreKeyboardHosts(void);
 static CFTimeInterval NGLastPreferenceCheck;
 static void NGReadPrefs(void) {
     NGLastPreferenceCheck=CACurrentMediaTime();
     CFPreferencesAppSynchronize((__bridge CFStringRef)NGDomain);
     NSDictionary *previous=NGGlobalSnapshot;
     BOOL loaded=NGLoadGlobalSnapshot();
-    if (NGValues && previous && [previous isEqualToDictionary:NGGlobalSnapshot]) return;
+    if (NGValues && previous && [previous isEqualToDictionary:NGGlobalSnapshot]) {
+        BOOL enabled=[NGCopyPreference(@"KeyboardGlassEnabled") respondsToSelector:@selector(boolValue)] ? [NGCopyPreference(@"KeyboardGlassEnabled") boolValue] : YES;
+        if (enabled==NGKeyboardGlassEnabled) return;
+    }
     NSLog(@"[KeyboardGlass Prefs] bundle=%@ global=%@ path=%@",
         NSBundle.mainBundle.bundleIdentifier, loaded ? @"loaded" : (previous ? @"retained" : @"unavailable"), NGSnapshotPath);
+    NGKeyboardGlassEnabled=[NGCopyPreference(@"KeyboardGlassEnabled") respondsToSelector:@selector(boolValue)] ? [NGCopyPreference(@"KeyboardGlassEnabled") boolValue] : YES;
+    if (!NGKeyboardGlassEnabled) {
+        NGHideCandidateControls=NO;
+        NGHideCandidateHighlight=NO;
+        NGRestoreKeyboardHosts();
+        NGRefreshCandidateControls();
+        NGRefreshCandidateHighlight();
+        return;
+    }
     NGSkin = NGSelectedSkin();
     NGValues = NGEffectiveValues(NGSkin);
     NGSystemAlpha = NGNumber(NGCopyPreference(@"SystemAlpha"), 1, 0, 1);
@@ -85,10 +101,40 @@ static const void *NGOutlineStateKey = &NGOutlineStateKey;
 @interface NGBackdropOutlineState : NSObject
 @property(nonatomic, strong) CALayer *container;
 @property(nonatomic, strong) CALayer *outline;
-
+@property(nonatomic) BOOL captured;
+@property(nonatomic, strong) UIVisualEffect *effect;
+@property(nonatomic, strong) UIColor *backgroundColor;
+@property(nonatomic, strong) UIColor *contentBackgroundColor;
+@property(nonatomic, weak) UIView *backdropChild;
+@property(nonatomic) BOOL childHidden;
+@property(nonatomic) CGFloat childAlpha;
+@property(nonatomic, strong) CALayer *childMask;
 @end
 @implementation NGBackdropOutlineState
 @end
+static void NGRestoreKeyboardHosts(void) {
+    for (UIVisualEffectView *host in NGHosts.allObjects) {
+        NGBackdropOutlineState *state=objc_getAssociatedObject(host,NGOutlineStateKey);
+        if (!state) continue;
+        UIView *clip=objc_getAssociatedObject(host,NGClipKey);
+        UIImageView *image=objc_getAssociatedObject(host,NGImageKey);
+        [clip removeFromSuperview]; [image removeFromSuperview];
+        host.effect=state.effect;
+        host.backgroundColor=state.backgroundColor;
+        host.contentView.backgroundColor=state.contentBackgroundColor;
+        UIView *child=state.backdropChild;
+        if (child) {
+            child.hidden=state.childHidden;
+            child.alpha=state.childAlpha;
+            child.layer.mask=state.childMask;
+        }
+        objc_setAssociatedObject(host,NGClipKey,nil,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(host,NGImageKey,nil,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        objc_setAssociatedObject(host,NGOutlineStateKey,nil,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    NGRestoreCandidateControls(nil);
+    NGRestoreHighlightViews(nil);
+}
 static void NGCollect(UIView *root, NSMutableArray<UIVisualEffectView *> *out, NSUInteger depth) {
     if (!root || depth > 20 || root.hidden || root.alpha <= 0.0) return;
     if ([NSStringFromClass(root.class) containsString:@"KeyboardDock"]) return;
@@ -198,10 +244,27 @@ static void NGApplyBackdropOutline(UIView *child, CGRect joined, BOOL enabled) {
 }
 
 static void NGApply(UIVisualEffectView *host) {
+    if (!NGKeyboardGlassEnabled) { NGRestoreKeyboardHosts(); return; }
     if (!host.window || CGRectIsEmpty(host.bounds)) return;
     if (!NGHosts) NGHosts = [NSHashTable weakObjectsHashTable];
     [NGHosts addObject:host];
+    NGBackdropOutlineState *state=objc_getAssociatedObject(host,NGOutlineStateKey);
+    if (!state) {
+        state=[NGBackdropOutlineState new];
+        state.effect=host.effect;
+        state.backgroundColor=host.backgroundColor;
+        state.contentBackgroundColor=host.contentView.backgroundColor;
+        Class backdropHostClass=NSClassFromString(@"UIKBBackdropView");
+        Class backdropChildClass=NSClassFromString(@"_UIVisualEffectBackdropView");
+        if (backdropHostClass && backdropChildClass && [host isKindOfClass:backdropHostClass]) {
+            for (UIView *child in host.subviews) if (object_getClass(child)==backdropChildClass) {
+                state.backdropChild=child; state.childHidden=child.hidden; state.childAlpha=child.alpha; state.childMask=child.layer.mask; break;
+            }
+        }
+        objc_setAssociatedObject(host,NGOutlineStateKey,state,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
     UIImage *material = NGMaterial();
+    if (!NGKeyboardGlassEnabled) return;
     if (!material) return; // Do not remove native background if asset fails.
     UIView *clip = objc_getAssociatedObject(host, NGClipKey);
     if (!clip) {

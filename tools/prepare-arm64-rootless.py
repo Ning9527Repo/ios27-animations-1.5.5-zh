@@ -28,7 +28,7 @@ replace("iOS27Animations/Prefs/Makefile", "ARCHS = arm64e\n",
         "ARCHS = arm64 arm64e\n")
 replace("iOS27Animations/control",
         "Version: 0.3\nArchitecture: iphoneos-arm64e",
-        "Version: 0.3.1\nArchitecture: iphoneos-arm64")
+        "Version: 0.3.2\nArchitecture: iphoneos-arm64")
 replace("iOS27Animations/layout/Library/libSandy/iOS27Animations_SwitchReadConfig.plist",
         "/rootfs/var/mobile/Library/Accessibility/", "/var/mobile/Library/Accessibility/")
 replace("iOS27Animations/layout/Library/libSandy/KeyboardGlass_ReadConfig.plist",

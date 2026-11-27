@@ -23,6 +23,22 @@
 			<string>Enabled</string>
 		</dict>
 		<dict>
+			<key>cell</key>
+			<string>PSLinkCell</string>
+			<key>detail</key>
+			<string>CG27PageController</string>
+			<key>isController</key>
+			<true/>
+			<key>label</key>
+			<string>ios27动画</string>
+			<key>plist</key>
+			<string>AppAnimations</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+		</dict>
+		<dict>
 			<key>PostNotification</key>
 			<string>com.bazik1337.ios2627anims/changed</string>
 			<key>cell</key>
@@ -42,51 +58,17 @@
 		</dict>
 		<dict>
 			<key>cell</key>
-			<string>PSLinkCell</string>
-			<key>detail</key>
-			<string>CG27PageController</string>
-			<key>isController</key>
-			<true/>
+			<string>PSSwitchCell</string>
 			<key>label</key>
-			<string>ios27动画</string>
-			<key>plist</key>
-			<string>AppAnimations</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkCell</string>
-			<key>detail</key>
-			<string>CG27PageController</string>
-			<key>isController</key>
+			<string>Enabled</string>
+			<key>key</key>
+			<string>KeyboardGlassEnabled</string>
+			<key>defaults</key>
+			<string>com.ning.keyboardglass</string>
+			<key>default</key>
 			<true/>
-			<key>label</key>
-			<string>Notification Center</string>
-			<key>plist</key>
-			<string>NotificationCenter</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSLinkCell</string>
-			<key>detail</key>
-			<string>CG27PageController</string>
-			<key>isController</key>
-			<true/>
-			<key>label</key>
-			<string>Advanced</string>
-			<key>plist</key>
-			<string>Advanced</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
+			<key>PostNotification</key>
+			<string>com.ning.keyboardglass/ReloadPrefs</string>
 		</dict>
 		<dict>
 			<key>cell</key>

@@ -1,6 +1,7 @@
 #import <Preferences/PSListController.h>
 #import <Preferences/PSSpecifier.h>
 #import "../../shared/LiquidSwitchConfiguration.h"
+#import "../KeyboardGlass/GlassPreferences.h"
 #import "CG27PageController.h"
 #include <spawn.h>
 #include <unistd.h>
@@ -58,6 +59,15 @@ static void CG27ApplySliderTint(UIView *view) {
 
 - (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
     [super setPreferenceValue:value specifier:specifier];
+    NSString *key=[specifier propertyForKey:@"key"];
+    if ([key isEqualToString:@"KeyboardGlassEnabled"]) {
+        CFPreferencesSetAppValue(CFSTR("KeyboardGlassEnabled"), (__bridge CFPropertyListRef)@([value boolValue]), (__bridge CFStringRef)NGDomain);
+        CFPreferencesAppSynchronize((__bridge CFStringRef)NGDomain);
+        NSError *error=nil;
+        if (!NGPublishGlobalSnapshot(&error)) NSLog(@"[KeyboardGlass Settings] master switch publish failed: %@",error);
+        CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(),(__bridge CFStringRef)NGChanged,NULL,NULL,true);
+        return;
+    }
     if (![[specifier propertyForKey:@"key"] isEqualToString:@"LiquidSwitchEnabled"] ||
         ![[specifier propertyForKey:@"defaults"] isEqualToString:CG27LSDomain]) return;
     CFPreferencesAppSynchronize((__bridge CFStringRef)CG27LSDomain);
@@ -132,6 +142,11 @@ static void CG27ApplySliderTint(UIView *view) {
         CFRelease(stored);
     }
     CFPreferencesAppSynchronize(domain);
+    CFPreferencesSetAppValue(CFSTR("KeyboardGlassEnabled"), kCFBooleanTrue, (__bridge CFStringRef)NGDomain);
+    CFPreferencesAppSynchronize((__bridge CFStringRef)NGDomain);
+    NSError *keyboardError = nil;
+    if (!NGPublishGlobalSnapshot(&keyboardError))
+        NSLog(@"[KeyboardGlass Settings] reset publish failed: %@", keyboardError);
     NSError *error = nil;
     if (!CG27LSPublishValue(NO, &error))
         NSLog(@"[iOS27Switch] Reset publish failed: %@:%ld", error.domain, (long)error.code);

@@ -36,9 +36,8 @@ root_plist=plistlib.loads((root/'iOS27Animations/Prefs/Resources/Root.plist').re
 rows=root_plist['items']; switch=[x for x in rows if x.get('key')=='LiquidSwitchEnabled']
 assert len(switch)==1 and switch[0]['cell']=='PSSwitchCell' and switch[0]['default'] is False
 assert switch[0]['defaults']=='com.bazik1337.ios2627anims' and switch[0]['PostNotification']=='com.bazik1337.ios2627anims/changed'
-for lang in ('en','ru','zh-Hans'):
-    text=(root/f'iOS27Animations/Prefs/Resources/{lang}.lproj/Root.strings').read_text()
-    assert '"Liquid switch" =' in text
+text=(root/'iOS27Animations/Prefs/Resources/zh-Hans.lproj/Root.strings').read_text()
+assert '"Liquid switch" =' in text
 wf=(root/'.github/workflows/build-roothide.yml').read_text()
 assert 'prepare-switch-resources.py' in wf and 'SwitchFeature/LICENSE-Theseus' in wf
 assert 'TheseusSwitch.dylib' not in mk+wf

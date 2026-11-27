@@ -6,16 +6,21 @@ res=root/'iOS27Animations/Prefs/Resources'
 fixture=json.loads((root/'tests/fixtures/settings-before-submenus.json').read_text())
 pages={name:plistlib.loads((res/(name+'.plist')).read_bytes()) for name in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGlass')}
 main=pages['Root']['items']
-assert main[:2]==fixture['root_prefix'], 'master enable changed'
-assert main[2]==fixture['switch_control']
-kg=main[10]
-assert kg=={'cell':'PSLinkCell','detail':'CG27KeyboardGlassController','isController':True,'label':'Keyboard Glass','plist':'KeyboardGlass'}
-assert main[11:]==[{'cell':'PSGroupCell'}, {'action':'resetSettings','cell':'PSButtonCell','label':'Reset settings'}, {'action':'respring','cell':'PSButtonCell','label':'Respring'}]
+assert main[0]=={'cell':'PSGroupCell'}
+assert main[1]['key']=='Enabled' and main[2]['plist']=='AppAnimations'
+assert main[3]=={'cell':'PSGroupCell'} and main[4]['key']=='LiquidSwitchEnabled'
+assert main[5]=={'cell':'PSGroupCell'}
+assert main[6]['key']=='KeyboardGlassEnabled' and main[6]['label']=='Enabled' and main[6]['default'] is True
+assert main[7]=={'cell':'PSLinkCell','detail':'CG27KeyboardGlassController','isController':True,'label':'Keyboard Glass','plist':'KeyboardGlass'}
+assert main[8:]==[{'cell':'PSGroupCell'}, {'action':'resetSettings','cell':'PSButtonCell','label':'Reset settings'}, {'action':'respring','cell':'PSButtonCell','label':'Respring'}]
 links=[x for x in main if x.get('cell')=='PSLinkCell']
-assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Notification Center','NotificationCenter'),('Advanced','Advanced'),('Keyboard Glass','KeyboardGlass')]
-for link in links[:3]:
-    assert link['detail']=='CG27PageController' and link['isController'] is True
-assert {x['key'] for x in main if 'key' in x}=={'Enabled','LiquidSwitchEnabled'}
+assert [(x['label'],x['plist']) for x in links]==[('ios27动画','AppAnimations'),('Keyboard Glass','KeyboardGlass')]
+app_rows=pages['AppAnimations']['items']
+assert not any(x.get('cell')=='PSLinkCell' for x in app_rows), 'nested third-level links remain'
+assert [x.get('label') for x in app_rows if x.get('cell')=='PSGroupCell']==[None,'Notification Center','Advanced']
+assert [x['key'] for x in app_rows if 'key' in x]==['AppAnimations','OpenSpeed','CloseSpeed','IconFlyIn','ClearSheet','Intensity','GestureBounce','FlyStrength','GlobalSlow']
+assert {x['key'] for x in main if 'key' in x}=={'Enabled','LiquidSwitchEnabled','KeyboardGlassEnabled'}
+assert not (res/'en.lproj').exists() and not (res/'ru.lproj').exists()
 assert sum(x.get('label')=='Keyboard Glass' and x.get('plist')=='KeyboardGlass' for x in links)==1
 assert sum(bool(x.get('entry')) for x in main)==0
 assert (root/'iOS27Animations/Makefile').read_text().count('KeyboardGlass/KeyboardBackground.m')==1
@@ -28,10 +33,11 @@ kgcontroller=(root/'iOS27Animations/Prefs/KeyboardGlassController.m').read_text(
 assert '- (void)setSpecifiers:(NSMutableArray *)rows' in kgcontroller
 assert 'mutableCopy];' in kgcontroller
 assert sum(x.get('cell')=='PSSwitchCell' for x in pages['KeyboardGlass']['items'])==3
+assert [x['key'] for x in main if x.get('defaults')=='com.ning.keyboardglass']==['KeyboardGlassEnabled']
 assert sum(x.get('cell')=='PSSliderCell' for x in pages['KeyboardGlass']['items'])==17
 assert sum(x.get('cell')=='PSGroupCell' for x in pages['KeyboardGlass']['items'])==10
 assert all(x.get('cellClass')=='NGGlassSliderCell' and x.get('height')==92 for x in pages['KeyboardGlass']['items'] if x.get('cell')=='PSSliderCell')
-for lang in ('en','ru','zh-Hans'):
+for lang in ('zh-Hans',):
     pairs=re.findall(r'^"([^"\n]+)"\s*=\s*"([^"\n]*)";', (res/(lang+'.lproj')/'KeyboardGlass.strings').read_text(),re.M)
     trans=dict(pairs)
     assert len(trans)==len(pairs)
@@ -49,19 +55,22 @@ assert 'loadSpecifiersFromPlistName:@"KeyboardGlass"' in (root/'iOS27Animations/
 assert not (root/'iOS27Animations/Prefs/Resources/KeyboardGlassEntry.plist').exists()
 assert not list((root/'iOS27Animations/Prefs').glob('KeyboardGlass*.dylib'))
 
-expected={'AppAnimations':['AppAnimations','OpenSpeed','CloseSpeed'],'NotificationCenter':['IconFlyIn','ClearSheet'],'Advanced':['Intensity','GestureBounce','FlyStrength','GlobalSlow']}
-controls={x['key']:x for name,page in pages.items() if name!='KeyboardGlass' for x in page['items'] if 'key' in x}
+expected={'AppAnimations':['AppAnimations','OpenSpeed','CloseSpeed','IconFlyIn','ClearSheet','Intensity','GestureBounce','FlyStrength','GlobalSlow']}
+controls={x['key']:x for name,page in pages.items() if name!='KeyboardGlass' for x in page['items'] if 'key' in x and x['key']!='KeyboardGlassEnabled'}
 assert controls==fixture['controls'], 'preference controls, defaults, domains or ranges changed'
 for name,keys in expected.items():
     rows=pages[name]['items']
     assert rows[0]=={'cell':'PSGroupCell'}
-    assert sum(x.get('cell')=='PSGroupCell' for x in rows)==1, name+' split into cards'
+    if name=='AppAnimations':
+        assert [x.get('label') for x in rows if x.get('cell')=='PSGroupCell']==[None,'Notification Center','Advanced']
+    else:
+        assert sum(x.get('cell')=='PSGroupCell' for x in rows)==1, name+' split into cards'
     assert [x['key'] for x in rows if 'key' in x]==keys
     assert all(x['cell'] in ('PSGroupCell','PSStaticTextCell','PSSwitchCell','PSSliderCell') for x in rows)
     for index,row in enumerate(rows):
         if row.get('cell')=='PSSliderCell':
             assert rows[index-1]['cell']=='PSStaticTextCell' and rows[index-1]['label'], 'slider label missing'
-    for lang in ('en','ru','zh-Hans'):
+    for lang in ('zh-Hans',):
         strings=res/(lang+'.lproj')/(name+'.strings')
         pairs=re.findall(r'^"([^"\n]+)"\s*=\s*"([^"\n]*)";',strings.read_text(),re.M)
         trans=dict(pairs); assert len(trans)==len(pairs), 'duplicate translation'

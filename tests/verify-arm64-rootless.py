@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory(prefix="ios27-arm64-verify-") as tmp:
     control = run("dpkg-deb", "-f", str(package))
     fields = dict(line.split(": ", 1) for line in control.splitlines() if ": " in line)
     assert fields["Package"] == "com.ning.ios2627anims", fields
-    assert fields["Version"] == "0.3.1" and fields["Architecture"] == "iphoneos-arm64", fields
+    assert fields["Version"] == "0.3.2" and fields["Architecture"] == "iphoneos-arm64", fields
     assert fields["Author"] == fields["Maintainer"] == "Ning", fields
     assert fields["Name"] == "iOS 27 动画" and "Icon" not in fields, fields
     assert package.name == f"{fields['Package']}_{fields['Version']}_{fields['Architecture']}.deb"
@@ -56,8 +56,7 @@ with tempfile.TemporaryDirectory(prefix="ios27-arm64-verify-") as tmp:
     app = prefs / "iOS2627AnimsPrefs"
     resource = dest / "var/jb/Library/Application Support/iOS27Animations/TheseusSwitchResources.bundle"
     assert main.is_file() and app.is_file() and (resource / "default.metallib").stat().st_size > 1000
-    # The vendored Theseus resource keeps its upstream resource version (0.3);
-    # package and preference bundle versions are independently verified as 0.3.1.
+# The package and preference bundle versions are independently checked.
     assert plistlib.loads((resource / "Info.plist").read_bytes())["CFBundleVersion"] == "0.3"
     assert sorted(p.relative_to(dest).as_posix() for p in dest.rglob("*.dylib")) == ["var/jb/Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib"]
     assert plistlib.loads((prefs / "Info.plist").read_bytes())["CFBundleShortVersionString"] == "0.3"

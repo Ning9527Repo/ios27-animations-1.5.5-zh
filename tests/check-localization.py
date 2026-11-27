@@ -6,9 +6,10 @@ original=root/'iOS27Animations'
 import os
 expected_scheme = os.environ.get('PACKAGE_SCHEME', 'roothide')
 assert f'THEOS_PACKAGE_SCHEME = {expected_scheme}' in (original/'Makefile').read_text()
-expected_arch = 'arm64' if expected_scheme == 'rootless' else 'arm64e'
-assert f'ARCHS = {expected_arch}' in (original/'Makefile').read_text()
-assert f'ARCHS = {expected_arch}' in (prefs/'Makefile').read_text()
+expected_arch_line = 'ARCHS = arm64 arm64e' if expected_scheme == 'rootless' else 'ARCHS = arm64e'
+assert expected_arch_line in (original/'Makefile').read_text()
+assert expected_arch_line in (prefs/'Makefile').read_text()
+assert sorted(p.name for p in (prefs/'Resources').glob('*.lproj')) == ['zh-Hans.lproj']
 assert '-F$(THEOS_PROJECT_DIR)/Prefs/linker' in (prefs/'Makefile').read_text()
 stub=prefs/'linker/Preferences.framework/Preferences.tbd'
 assert 'PSListController._specifiers' in stub.read_text()
@@ -23,6 +24,7 @@ for page in ('Root','AppAnimations','NotificationCenter','Advanced','KeyboardGla
     keys={item.get('label') for item in data['items'] if item.get('label')}
     keys.add(data['title'])
     assert not (keys-set(translations)-{'@bazik1337','GitHub'}),keys-set(translations)
+    if page=='Root': assert translations.get('Enabled')=='启用'
     if page=='Root': assert translations.get('Keyboard Glass')=='键盘仿玻璃'
     assert all(translations.values())
     print(page,len(data['items']),len(translations))

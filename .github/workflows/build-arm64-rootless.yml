@@ -1,4 +1,4 @@
-name: iOS 27 Animations 0.3.1 rootless universal arm64+arm64e
+name: iOS 27 Animations 0.3.2 rootless universal arm64+arm64e
 on:
   workflow_dispatch:
 permissions:
@@ -9,13 +9,16 @@ jobs:
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Prepare isolated rootless arm64 tree
-        run: python3 tools/prepare-arm64-rootless.py "$RUNNER_TEMP/ios27-rootless"
+      - name: Prepare isolated rootless universal arm64 tree
+        run: |
+          python3 tools/prepare-arm64-rootless.py "$RUNNER_TEMP/ios27-rootless"
+          cd "$RUNNER_TEMP/ios27-rootless"
+          python3 tools/merge-settings-groups.py
       - name: Validate rootless source and settings
         env:
           PACKAGE_SCHEME: rootless
           PACKAGE_ARCH: iphoneos-arm64
-          PACKAGE_VERSION: 0.3.1
+          PACKAGE_VERSION: 0.3.2
         run: |
           cd "$RUNNER_TEMP/ios27-rootless"
           python3 tests/check-localization.py
@@ -63,7 +66,7 @@ jobs:
           cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/vendor-manifest.json"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
-          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.3.1' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
+          make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.3.2' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
       - name: Verify rootless arm64 package and signatures
         env:
           PACKAGE_ARCH: arm64
@@ -79,7 +82,7 @@ jobs:
       - name: Upload arm64 package and verification
         uses: actions/upload-artifact@v4
         with:
-          name: iOS27Animations-0.3.1-universal-rootless
+          name: iOS27Animations-0.3.2-universal-rootless
           path: |
             ${{ runner.temp }}/ios27-rootless/iOS27Animations/packages/*.deb
             ${{ runner.temp }}/ios27-rootless/iOS27Animations/packages/*.json
