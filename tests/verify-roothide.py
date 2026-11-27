@@ -72,7 +72,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert [x.get('label') for x in app_rows if x.get('cell')=='PSGroupCell']==[None,'Notification Center','Advanced']
     assert not any(x.get('cell')=='PSLinkCell' for x in app_rows)
     assert [x['key'] for x in app_rows if 'key' in x]==['AppAnimations','OpenSpeed','CloseSpeed','IconFlyIn','ClearSheet','Intensity','GestureBounce','FlyStrength','GlobalSlow']
-    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='0.3.3'
+    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='0.3'
     out=[]
     for f in (lib,app):
         data=f.read_bytes()
