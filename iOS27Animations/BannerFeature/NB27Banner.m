@@ -13,10 +13,10 @@
 
 // No GlassSuiteX library is embedded, dlopened, patched, or required.
 static NSString *const NB27Domain=@"com.ning.ios2627anims";
-static NSString *const NB27Prefix=@"com.ning.ios2627anims.banner.";
-static NSString *const NB27EntranceKey=@"com.ning.ios2627anims.banner.entrance";
-static NSString *const NB27ExitKey=@"com.ning.ios2627anims.banner.exit";
-static NSString *const NB27BaseKey=@"com.ning.ios2627anims.banner.exitBase";
+static NSString *const NB27Prefix=@"com.ning.ios2627anims.";
+static NSString *const NB27EntranceKey=@"com.ning.ios2627anims.entrance";
+static NSString *const NB27ExitKey=@"com.ning.ios2627anims.exit";
+static NSString *const NB27BaseKey=@"com.ning.ios2627anims.exitBase";
 static char NB27CurrentKey,NB27PendingKey,NB27OwnerKey,NB27InteractionKey,NB27GenerationKey,NB27NativeExitKey;
 static BOOL NB27OriginalClassSeen=NO;
 static void NB27Reload(void);
@@ -25,7 +25,7 @@ static BOOL NB27UserEnabled=YES,NB27OriginalEnabled=NO;
 static double NB27Elasticity=1.0,NB27TransitionScale=1.0,NB27DwellScale=1.0;
 static BOOL NB27BannerTransitionDurationDone=NO;
 static BOOL NB27DismissTimerDone=NO,NB27StartTimerWithDelayDone=NO;
-static NSString *const NB27DismissScopeKey=@"com.ning.ios2627anims.banner.dismiss-scope";
+static NSString *const NB27DismissScopeKey=@"com.ning.ios2627anims.dismiss-scope";
 static double (*NB27OriginalBannerTransitionDuration)(id,SEL,id);
 static void (*NB27OriginalStartDismissTimer)(id,SEL);
 static id (*NB27OriginalStartTimerWithDelay)(id,SEL,unsigned long long,id);
@@ -74,7 +74,7 @@ static double NB27NativeExitDuration(id animator,id<UIViewControllerContextTrans
 @property(nonatomic,copy) NSArray<NB27Pose *> *heldPoses;
 @property(nonatomic) BOOL active,exiting,motionOriginReady,retentionOnly;
 @property(nonatomic) NSUInteger compactTicket;
-@property(nonatomic) double compactDX,compactDY,baseScaleX,baseScaleY;
+@property(nonatomic) double compactDX,compactDY,compactScaleX,compactScaleY,baseScaleX,baseScaleY;
 @property(nonatomic) double exitAdjustmentX,exitAdjustmentY;
 @property(nonatomic) NB27CompactAnchor timeAnchor;
 @property(nonatomic,strong) id<UIViewControllerContextTransitioning> transitionContext;
@@ -228,8 +228,8 @@ static BOOL NB27MeasureCompactOrigin(NB27Session *s,UIView *card) {
  }
  s.baseScaleX=baseX;s.baseScaleY=baseY;
  double w=CGRectGetWidth(card.bounds)*baseX,h=CGRectGetHeight(card.bounds)*baseY;
- double sign=card.effectiveUserInterfaceLayoutDirection==UIUserInterfaceLayoutDirectionRightToLeft?-1:1;
- s.compactDX=sign*w*NB27MotionNodes[0][3];s.compactDY=h*NB27MotionNodes[0][4];
+ s.compactScaleX=NB27MotionNodes[0][1];s.compactScaleY=NB27MotionNodes[0][2];
+ s.compactDX=w*NB27MotionNodes[0][3];s.compactDY=h*NB27MotionNodes[0][4];
  s.motionOriginReady=NO;
  CGPoint origin=CGPointZero;CGSize lineSize=CGSizeZero;
  NB27CompactAnchor anchor=s.timeAnchor;
@@ -237,14 +237,15 @@ static BOOL NB27MeasureCompactOrigin(NB27Session *s,UIView *card) {
  if(!NB27CompactOriginFromAnchor(card,anchor,&origin,&lineSize)) {
   NB27Diagnostic(@"origin-fallback",anchor.valid?@"clock snapshot cannot map to banner":@"no visible status clock");return YES;
  }
- origin.x=NB27ReferenceCompactCenter(origin.x,lineSize.width,w,sign);
+ double compactScaleX=NB27ReferenceCompactScale(lineSize.width,CGRectGetWidth(card.bounds)*baseX);
+ double compactScaleY=NB27ReferenceCompactScale(lineSize.height,CGRectGetHeight(card.bounds)*baseY);
  CGPoint visualCenter=[card.layer convertPoint:CGPointMake(CGRectGetMidX(card.bounds),CGRectGetMidY(card.bounds))
   toLayer:card.superview.layer];
  double dx=origin.x-visualCenter.x,dy=origin.y-visualCenter.y;
  if(!isfinite(dx)||!isfinite(dy)||fabs(dx)>w*4||fabs(dy)>h*4) {
   NB27Diagnostic(@"origin-fallback",@"clock snapshot outside supported card coordinate range");return YES;
  }
- s.compactDX=dx;s.compactDY=dy;s.motionOriginReady=YES;
+ s.compactDX=dx;s.compactDY=dy;s.compactScaleX=compactScaleX;s.compactScaleY=compactScaleY;s.motionOriginReady=YES;
  return YES;
 }
 static void NB27AnimateEntrance(NB27Session *s,UIView *card) {
@@ -258,7 +259,7 @@ static void NB27AnimateEntrance(NB27Session *s,UIView *card) {
  NSMutableArray *sx=[NSMutableArray new],*sy=[NSMutableArray new],*px=[NSMutableArray new],*py=[NSMutableArray new];
  for(NSUInteger i=0;i<NB27SampleCount;i++) {
   double t=(double)i*duration/(NB27SampleCount-1);
-  NB27ReferencePose p=NB27ReferenceLayerAtWithSettings(t,w,h,anchor.x,anchor.y,s.compactDX,s.compactDY,s.baseScaleX,s.baseScaleY,s.elasticity,s.transitionScale);
+  NB27ReferencePose p=NB27ReferenceLayerCompactAtWithSettings(t,w,h,anchor.x,anchor.y,s.compactDX,s.compactDY,s.baseScaleX,s.baseScaleY,s.compactScaleX,s.compactScaleY,s.elasticity,s.transitionScale);
   [sx addObject:@(p.scaleX)];[sy addObject:@(p.scaleY)];
   [px addObject:@(p.x)];[py addObject:@(p.y)];
  }
@@ -293,7 +294,7 @@ static void NB27AnimateExit(NB27Session *s) {
  // model layers. Never remeasure against its offscreen/end position here.
  for(NSUInteger i=0;i<NB27SampleCount;i++) {
   double progress=(double)i/(NB27SampleCount-1),t=(1-progress)*NB27Clamp(start,0,NB27ScaledDuration(s.transitionScale));
-  NB27ReferencePose p=NB27ReferenceLayerReverseWithSettings(t,start,w,h,anchor.x,anchor.y,s.compactDX,s.compactDY,s.baseScaleX,s.baseScaleY,s.elasticity,s.transitionScale);
+  NB27ReferencePose p=NB27ReferenceLayerCompactReverseWithSettings(t,start,w,h,anchor.x,anchor.y,s.compactDX,s.compactDY,s.baseScaleX,s.baseScaleY,s.compactScaleX,s.compactScaleY,s.elasticity,s.transitionScale);
   double blend=progress*progress*(3-2*progress);
   [sx addObject:@(p.scaleX)];[sy addObject:@(p.scaleY)];
   [px addObject:@(fma(blend,s.exitAdjustmentX,p.x))];[py addObject:@(fma(blend,s.exitAdjustmentY,p.y))];
@@ -365,6 +366,14 @@ static NB27Session *NB27NewSession(UIViewController *controller) {
 static BOOL NB27IsReplacement(id animator) {
  Class cls=NSClassFromString(@"BNBannerReplacementTransitionAnimator");return cls&&[animator isKindOfClass:cls];
 }
+static BOOL NB27IsReplacementTransition(id animator,id<UIViewControllerContextTransitioning> context) {
+ if(NB27IsReplacement(animator))return YES;
+ if(!context)return NO;
+ Class presentable=NSClassFromString(@"SBNotificationPresentableViewController");
+ UIViewController *from=[context viewControllerForKey:UITransitionContextFromViewControllerKey];
+ UIViewController *to=[context viewControllerForKey:UITransitionContextToViewControllerKey];
+ return presentable&&from&&to&&from!=to&&[from isKindOfClass:presentable]&&[to isKindOfClass:presentable];
+}
 static NB27Session *NB27PrepareExit(id animator,id<UIViewControllerContextTransitioning> context,
  UIViewController *controller,double overrideDuration) {
  if(!NB27Enabled())return nil;
@@ -395,6 +404,7 @@ static NB27Session *NB27PrepareExit(id animator,id<UIViewControllerContextTransi
  if(reusable&&pending.transitionScale!=transitionScale)start=NB27ScaledDuration(transitionScale);
  NB27Session *originSource=reusable?pending:((old.active&&old.card==card&&old.startedAt>0)?old:nil);
  double dx=originSource.compactDX,dy=originSource.compactDY;
+ double compactScaleX=originSource.compactScaleX,compactScaleY=originSource.compactScaleY;
  NB27End(old);NB27End(pending);
  NB27Session *s=NB27NewSession(controller);s.card=card;s.exiting=YES;s.heldPoses=poses;
  s.elasticity=elasticity;s.transitionScale=transitionScale;s.transitionContext=context;
@@ -408,6 +418,7 @@ static NB27Session *NB27PrepareExit(id animator,id<UIViewControllerContextTransi
    s.exitAdjustmentX=s.compactDX-dx;s.exitAdjustmentY=s.compactDY-dy;
   }
   s.compactDX=dx;s.compactDY=dy;
+  s.compactScaleX=compactScaleX;s.compactScaleY=compactScaleY;
  }
  s.compactTicket=NB27CompactBeginExit(s.motionOriginReady);
  s.startMotionTime=start;s.nativeDuration=duration;s.exitDuration=NB27ExitDuration(duration,start,transitionScale);
@@ -423,6 +434,7 @@ static void NB27StagePending(NB27Session *old) {
  pending.heldPoses=NB27Capture(old.guardedLayers.allObjects);
  pending.transitionGeneration=NB27Associated(controller,&NB27GenerationKey);
  pending.compactDX=old.compactDX;pending.compactDY=old.compactDY;
+ pending.compactScaleX=old.compactScaleX;pending.compactScaleY=old.compactScaleY;
  double elapsed=CACurrentMediaTime()-old.startedAt;
  pending.startMotionTime=NB27Clamp(elapsed,0,NB27ScaledDuration(old.transitionScale));
  pending.elasticity=old.elasticity;pending.transitionScale=old.transitionScale;
@@ -450,17 +462,18 @@ static void NB27AnimateHook(id animator,SEL cmd,id<UIViewControllerContextTransi
  Class presentable=NSClassFromString(@"SBNotificationPresentableViewController");
  BOOL validTo=presentable&&[to isKindOfClass:presentable];
  BOOL validFrom=presentable&&[from isKindOfClass:presentable];
- BOOL replacement=NB27IsReplacement(animator);
+ BOOL replacement=NB27IsReplacementTransition(animator,context);
  SEL presentingSelector=NSSelectorFromString(@"isPresenting");
  BOOL knows=[animator respondsToSelector:presentingSelector];
  BOOL presenting=knows&&((BOOL(*)(id,SEL))objc_msgSend)(animator,presentingSelector);
  Class transition=NSClassFromString(@"BNBannerTransitionAnimator");
  BOOL dismissing=transition&&[animator isKindOfClass:transition]&&knows&&!presenting&&!replacement;
- if(replacement&&!context.isInteractive&&validFrom) {
-  NB27ClearController(from);NB27ClearController(to);
-  NB27BeginNativeExit(animator,context);
+ if(replacement) {
+  if(validFrom)NB27ClearController(from);
+  if(validTo)NB27ClearController(to);
+  if(!context.isInteractive)NB27BeginNativeExit(animator,context);
   NB27OriginalAnimate(animator,cmd,context);
-  if(context.transitionWasCancelled)NB27AbortNativeExit(from);
+  if(context.transitionWasCancelled&&from)NB27AbortNativeExit(from);
   return;
  }
  BOOL entrance=!context.isInteractive&&presenting&&validTo;
@@ -475,11 +488,6 @@ static void NB27AnimateHook(id animator,SEL cmd,id<UIViewControllerContextTransi
    CACurrentMediaTime()-pending.pendingSince<.5;
   if(matches)pending.transitionGeneration=generation;
   else if(pending)NB27End(pending);
- }
- if(replacement&&validFrom) {
-  NB27Session *pending=NB27Associated(from,&NB27PendingKey);
-  if(pending)pending.transitionGeneration=generation;
-  else NB27StagePending(NB27Associated(from,&NB27CurrentKey));
  }
  if(context.isInteractive&&dismissing&&validFrom) {
   NB27OriginalAnimate(animator,cmd,context);
@@ -604,7 +612,7 @@ static void NB27BeginNativeExit(id animator,id<UIViewControllerContextTransition
  if(!context||context.isInteractive||!NB27UserEnabled||NB27OriginalEnabled)return;
  Class transition=NSClassFromString(@"BNBannerTransitionAnimator");
  SEL presentingSelector=NSSelectorFromString(@"isPresenting");
- BOOL replacement=NB27IsReplacement(animator);
+ BOOL replacement=NB27IsReplacementTransition(animator,context);
  if(replacement) {
   if(!NB27Enabled())return;
  } else if(!transition||![animator isKindOfClass:transition]||![animator respondsToSelector:presentingSelector]||
@@ -629,16 +637,12 @@ static void NB27BeginNativeExit(id animator,id<UIViewControllerContextTransition
  });
 }
 
-static id NB27CopyDomainValue(NSString *key) {
- CFPropertyListRef value=CFPreferencesCopyAppValue((__bridge CFStringRef)key,(__bridge CFStringRef)NB27Domain);
- return CFBridgingRelease(value);
-}
 static void NB27Reload(void) {
  CFPreferencesAppSynchronize((__bridge CFStringRef)NB27Domain);
- id value=NB27CopyDomainValue(@"BannerAnimationEnabled");
- id elasticity=NB27CopyDomainValue(@"BannerElasticity");
- id transitionScale=NB27CopyDomainValue(@"BannerTransitionScale");
- id dwellScale=NB27CopyDomainValue(@"BannerDwellScale");
+ id value=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("BannerAnimationEnabled"),(__bridge CFStringRef)NB27Domain));
+ id elasticity=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("BannerElasticity"),(__bridge CFStringRef)NB27Domain));
+ id transitionScale=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("BannerTransitionScale"),(__bridge CFStringRef)NB27Domain));
+ id dwellScale=CFBridgingRelease(CFPreferencesCopyAppValue(CFSTR("BannerDwellScale"),(__bridge CFStringRef)NB27Domain));
  NB27UserEnabled=[value isKindOfClass:NSNumber.class]?[value boolValue]:NO;
  NB27Elasticity=[elasticity isKindOfClass:NSNumber.class]&&isfinite([elasticity doubleValue])?NB27Clamp([elasticity doubleValue],0,2):1.0;
  NB27TransitionScale=[transitionScale isKindOfClass:NSNumber.class]&&isfinite([transitionScale doubleValue])?NB27Clamp([transitionScale doubleValue],.5,2):1.0;
@@ -649,7 +653,7 @@ static void NB27Reload(void) {
  NB27OriginalClassSeen=NSClassFromString(@"GAXIOS27BannerSession")!=Nil;
  NB27OriginalEnabled=NB27OriginalClassSeen&&[original isKindOfClass:NSNumber.class]&&[original boolValue];
  BOOL enabled=NB27Enabled();
- NB27CompactSetEnabled(enabled&&!NB27OriginalEnabled);
+ NB27CompactSetEnabled(NB27UserEnabled&&!NB27OriginalEnabled);
  if(!enabled)for(NB27Session *s in NB27Sessions.allObjects)NB27End(s);
  if(NB27OriginalEnabled)NSLog(@"[27banner] Original iOS27 option is enabled; standalone animation suspended to avoid double hooks.");
 }
@@ -682,7 +686,7 @@ static id NB27StartTimerWithDelay(id self,SEL cmd,unsigned long long delay,id ha
 static void NB27StartDismissTimer(id self,SEL cmd) {
  NSMutableDictionary *threadState=[NSThread currentThread].threadDictionary;
  id previous=threadState[NB27DismissScopeKey];
- double scale=(NB27Enabled()&&!NB27OriginalEnabled)?NB27DwellScale:1.0;
+ double scale=(NB27UserEnabled&&!NB27OriginalEnabled)?NB27DwellScale:1.0;
  threadState[NB27DismissScopeKey]=@{@"destination":self,@"scale":@(scale)};
  @try { NB27OriginalStartDismissTimer(self,cmd); }
  @finally {
@@ -748,7 +752,7 @@ __attribute__((constructor)) static void NB27Initialize(void) {
   dispatch_async(dispatch_get_main_queue(),^{
    NB27Sessions=[NSHashTable weakObjectsHashTable];NB27Reload();NB27Install();
    static int token=-1,originalToken=-1;
-   notify_register_dispatch("com.ning.ios2627anims/changed",&token,dispatch_get_main_queue(),^(int t){(void)t;NB27Reload();});
+   notify_register_dispatch("com.ning.ios2627anims.changed",&token,dispatch_get_main_queue(),^(int t){(void)t;NB27Reload();});
    notify_register_dispatch("com.wkk.glasssuitex.preferences.changed",&originalToken,dispatch_get_main_queue(),^(int t){(void)t;NB27Reload();});
    [NSNotificationCenter.defaultCenter addObserverForName:UIAccessibilityReduceMotionStatusDidChangeNotification
     object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *note){(void)note;NB27Reload();}];

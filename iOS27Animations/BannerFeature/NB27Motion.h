@@ -78,6 +78,14 @@ static inline double NB27ExitDuration(double nativeDuration,double motionTime,do
  double base=fmin(unscaledDuration-1.0/60.0,.48)*fmax(unscaledMotion/NB27Duration,.25);
  return NB27Clamp(base*scale,1.0/120.0,nativeDuration*.9);
 }
+static inline double NB27MotionCompactWithSettings(double t,unsigned c,double compactScale,double elasticity,double transitionScale) {
+ double value=NB27MotionWithSettings(t,c,elasticity,transitionScale);
+ if(c>1)return value;
+ if(!isfinite(compactScale)||compactScale<=0||compactScale>=1)compactScale=NB27MotionNodes[0][c+1];
+ double first=NB27MotionWithSettings(0,c,elasticity,transitionScale);
+ if(!isfinite(first)||fabs(1.0-first)<1e-12)return value;
+ return compactScale+(value-first)*(1.0-compactScale)/(1.0-first);
+}
 static inline unsigned long long NB27ScaleDismissDelay(unsigned long long delay,double scale) {
  if(!isfinite(scale))scale=1.0;
  long double value=(long double)delay*(long double)NB27Clamp(scale,.5,3.0);

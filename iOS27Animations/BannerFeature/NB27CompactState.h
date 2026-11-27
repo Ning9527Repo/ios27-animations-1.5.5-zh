@@ -1,6 +1,19 @@
 #pragma once
 #include <stdbool.h>
 #include <stdint.h>
+#include <math.h>
+
+static inline double NB27CompactRaisedLineY(double barMinY,double barMaxY,double textMaxY,
+    double currentY,double lineHeight,double raise,double textGap,double edgeInset) {
+    if (!isfinite(barMinY) || !isfinite(barMaxY) || !isfinite(textMaxY) ||
+        !isfinite(currentY) || !isfinite(lineHeight) || !isfinite(raise) ||
+        !isfinite(textGap) || !isfinite(edgeInset) || barMaxY <= barMinY ||
+        lineHeight <= 0 || raise < 0 || textGap < 0 || edgeInset < 0) return NAN;
+    double low = fmax(barMinY + edgeInset, textMaxY + textGap);
+    double high = barMaxY - lineHeight - edgeInset;
+    if (low > high) return NAN;
+    return fmin(high, fmax(low, currentY - raise));
+}
 
 typedef struct {
     uintptr_t generation, pending, previewTicket, retainedTicket, previousRetainedTicket;

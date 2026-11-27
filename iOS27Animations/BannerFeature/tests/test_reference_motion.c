@@ -2,17 +2,17 @@
 #include <stdio.h>
 #include "../NB27ReferenceMotion.h"
 static unsigned long cases;
-static void near(double a,double b) { assert(isfinite(a)&&isfinite(b)&&fabs(a-b)<1e-9);cases++; }
+static void near(double a,double b) { if(!(isfinite(a)&&isfinite(b)&&fabs(a-b)<1e-9))fprintf(stderr,"near failed: %.12g != %.12g (case %lu)\n",a,b,cases+1);assert(isfinite(a)&&isfinite(b)&&fabs(a-b)<1e-9);cases++; }
 int main(void) {
  for(unsigned width=100;width<=500;width+=20)
  for(unsigned height=20;height<=180;height+=20)
  for(unsigned a=0;a<=10;a++) {
   double w=width,h=height,ax=a/10.0,ay=(10-a)/10.0;
   for(unsigned lw=20;lw<=150;lw+=5) {
-   double c=NB27ReferenceCompactCenter(80,lw,w,1);
-   double rtl=NB27ReferenceCompactCenter(80,lw,w,-1);
-   near(c-w*NB27MotionNodes[0][1]*.5,80-lw*.5);
-   near(rtl+w*NB27MotionNodes[0][1]*.5,80+lw*.5);
+   double sx=NB27ReferenceCompactScale(lw,w),sy=NB27ReferenceCompactScale(2,h);
+   assert(sx>0&&sx<=.98&&sy>0&&sy<.25);
+   near(sx,fmin(.98,(double)lw/w));
+   near(sy,2.0/h);
   }
   // Default geometry must be algebraically identical to the recovered path.
   for(unsigned i=0;i<217;i++) {
@@ -20,6 +20,24 @@ int main(void) {
    double dx=w*NB27MotionNodes[0][3],dy=h*NB27MotionNodes[0][4];
    NB27ReferencePose p=NB27ReferenceAt(t,w,h,ax,ay,dx,dy);
    near(p.scaleX,NB27Motion(t,0)-1);near(p.scaleY,NB27Motion(t,1)-1);
+   double lineScaleX=NB27ReferenceCompactScale(fmin(64,w*.3),w);
+   double lineScaleY=NB27ReferenceCompactScale(2,h);
+   NB27ReferencePose compact=NB27ReferenceCompactAtWithSettings(t,w,h,ax,ay,dx,dy,lineScaleX,lineScaleY,1.0,1.0);
+   NB27ReferencePose compactRTL=NB27ReferenceCompactAtWithSettings(t,w,h,1-ax,ay,-dx,dy,lineScaleX,lineScaleY,1.0,1.0);
+   near(compact.x,-compactRTL.x);near(compact.y,compactRTL.y);
+   near(compact.scaleX,compactRTL.scaleX);near(compact.scaleY,compactRTL.scaleY);
+   NB27ReferencePose compactStart=NB27ReferenceLayerCompactAtWithSettings(0,w,h,ax,ay,dx,dy,.72,1.12,lineScaleX,lineScaleY,1.0,1.0);
+   NB27ReferencePose compactEnd=NB27ReferenceLayerCompactAtWithSettings(NB27Duration,w,h,ax,ay,dx,dy,.72,1.12,lineScaleX,lineScaleY,1.0,1.0);
+   NB27ReferencePose compactExit=NB27ReferenceLayerCompactReverseWithSettings(t,NB27Duration,w,h,ax,ay,dx,dy,.72,1.12,lineScaleX,lineScaleY,1.0,1.0);
+   near(.72+compactStart.scaleX,.72*lineScaleX);near(1.12+compactStart.scaleY,1.12*lineScaleY);
+   near(compactStart.x+(.5-ax)*w*compactStart.scaleX,dx);
+   near(compactStart.y+(.5-ay)*h*compactStart.scaleY,dy);
+   near(compactEnd.scaleX,0);near(compactEnd.scaleY,0);near(compactEnd.x,0);near(compactEnd.y,0);
+   NB27ReferencePose compactAtT=NB27ReferenceLayerCompactAtWithSettings(t,w,h,ax,ay,dx,dy,.72,1.12,lineScaleX,lineScaleY,1.0,1.0);
+   near(compactExit.scaleX,compactAtT.scaleX);near(compactExit.scaleY,compactAtT.scaleY);
+   near(compactExit.x,compactAtT.x);near(compactExit.y,compactAtT.y);
+   near(lineScaleX,NB27ReferenceCompactScale(fmin(64,w*.3),w));
+   near(lineScaleY,NB27ReferenceCompactScale(2,h));
    near(p.x,fma(p.scaleX,w*(ax-.5),w*NB27Motion(t,2)));
    near(p.y,fma(p.scaleY,h*(ay-.5),h*NB27Motion(t,3)));
   }

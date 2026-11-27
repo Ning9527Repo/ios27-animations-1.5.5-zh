@@ -1,9 +1,14 @@
 #include <assert.h>
 #include <stdio.h>
 #include "../NB27CompactState.h"
+#include <math.h>
 static unsigned long checks;
 #define CHECK(x) do { assert(x); ++checks; } while (0)
 int main(void) {
+    double lineY = NB27CompactRaisedLineY(20, 50, 30, 44, 2, 6, 3, 2);
+    CHECK(isfinite(lineY) && lineY == 38 && lineY >= 33 && lineY + 2 <= 48);
+    CHECK(isnan(NB27CompactRaisedLineY(20, 40, 34, 38, 2, 6, 3, 2)));
+    CHECK(NB27CompactRaisedLineY(20, 50, 38, 44, 2, 6, 3, 2) == 41);
     NB27CompactState s = {0};
     CHECK(!NB27CompactStateBegin(&s, true));
     CHECK(!NB27CompactStateFinish(&s, 0));
