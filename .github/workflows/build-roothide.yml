@@ -18,6 +18,9 @@ jobs:
           PACKAGE_SCHEME: roothide
           PACKAGE_ARCH: iphoneos-arm64e
           PACKAGE_VERSION: 0.3.3
+          PACKAGE_SCHEME: roothide
+          PACKAGE_ARCH: iphoneos-arm64e
+          EXPECTED_ARCHS: arm64e
         run: |
           python3 tests/check-localization.py
           python3 tests/check-package-identity.py
@@ -71,7 +74,7 @@ jobs:
           done
           python3 tests/verify-roothide.py iOS27Animations/packages
           python3 tests/check-arm64e-metadata.py iOS27Animations/packages/*.deb
-          python3 tests/check-code-pages.py iOS27Animations/packages/*.deb
+          EXPECTED_ARCHS=arm64e python3 tests/check-code-pages.py iOS27Animations/packages/*.deb
       - name: Upload package and verification
         uses: actions/upload-artifact@v4
         with:

@@ -4,6 +4,7 @@ import hashlib,json,pathlib,struct,subprocess,sys,tempfile,os
 
 CPU=0x100000c
 SUB={'arm64':0x0,'arm64e':0x80000002}
+DEFAULT_SUB=int(os.environ.get('MACHO_SUBTYPE','0x80000002'),0)
 
 def thin(data, expected_sub, label):
     assert data[:4]==b'\xcf\xfa\xed\xfe', label
@@ -44,9 +45,12 @@ def machos(data,label):
             assert cpu==CPU and sub in SUB.values(),(label,hex(cpu),hex(sub))
             name=next(k for k,v in SUB.items() if v==sub)
             out.append({'arch':name,**thin(data[off:off+size],sub,label+':'+name)})
-        assert {x['arch'] for x in out}=={'arm64','arm64e'},(label,out)
+        expected_arch=os.environ.get('EXPECTED_ARCHS','arm64,arm64e').split(',')
+        assert sorted(x['arch'] for x in out)==sorted(expected_arch),(label,out,expected_arch)
         return out
-    return [dict(arch=next(k for k,v in SUB.items() if v==struct.unpack_from('<I',data,8)[0]),**thin(data,struct.unpack_from('<I',data,12)[0],label))]
+    cpu,sub=struct.unpack_from('<II',data,4)
+    assert cpu==CPU and sub in SUB.values(),(label,hex(cpu),hex(sub))
+    return [dict(arch=next(k for k,v in SUB.items() if v==sub),**thin(data,sub,label))]
 
 def verify(path):
  with tempfile.TemporaryDirectory() as tmp:

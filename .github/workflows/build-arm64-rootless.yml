@@ -1,6 +1,7 @@
 name: iOS 27 Animations 0.3.2 rootless arm64
 on:
   workflow_dispatch:
+  workflow_call:
 permissions:
   contents: read
 jobs:
@@ -71,7 +72,7 @@ jobs:
         env:
           PACKAGE_ARCH: arm64
           MACHO_SUBTYPE: '0x0'
-          EXPECT_FAT: 'false'
+          EXPECTED_ARCHS: arm64
         run: |
           set -e
           for PACKAGE in "$RUNNER_TEMP"/ios27-rootless/iOS27Animations/packages/*.deb; do
@@ -79,7 +80,7 @@ jobs:
             mv "$PACKAGE.normalized" "$PACKAGE"
           done
           python3 "$RUNNER_TEMP/ios27-rootless/tests/verify-arm64-rootless.py" "$RUNNER_TEMP/ios27-rootless/iOS27Animations/packages"
-          python3 "$RUNNER_TEMP/ios27-rootless/tests/check-code-pages.py" "$RUNNER_TEMP/ios27-rootless/iOS27Animations/packages"/*.deb
+          EXPECTED_ARCHS=arm64 python3 "$RUNNER_TEMP/ios27-rootless/tests/check-code-pages.py" "$RUNNER_TEMP/ios27-rootless/iOS27Animations/packages"/*.deb
       - name: Upload arm64 package and verification
         uses: actions/upload-artifact@v4
         with:

@@ -51,6 +51,8 @@ with tempfile.TemporaryDirectory() as tmp:
     assert sorted(x.relative_to(d).as_posix() for x in d.rglob('*.dylib'))==['Library/MobileSubstrate/DynamicLibraries/iOS2627Anims.dylib']
     switch_rows=plistlib.loads((prefs/'Root.plist').read_bytes())['items']
     assert sum(x.get('key')=='LiquidSwitchEnabled' for x in switch_rows)==1
+    assert switch_rows[6].get('key')=='KeyboardGlassEnabled' and switch_rows[6].get('label')=='Enabled'
+    assert switch_rows[6].get('defaults')=='com.ning.keyboardglass'
     for name in ('LICENSE','NOTICE','vendor-manifest.json'):
         assert (d/'usr/share/doc/com.ning.ios2627anims/Theseus'/name).is_file()
     entry=plistlib.loads((d/'Library/PreferenceLoader/Preferences/iOS2627AnimsPrefs.plist').read_bytes())['entry']
@@ -66,9 +68,11 @@ with tempfile.TemporaryDirectory() as tmp:
     for page in ('Root','AppAnimations','NotificationCenter','Advanced'):
         assert (prefs/'zh-Hans.lproj'/(page+'.strings')).is_file()
     assert (prefs/'AppAnimations.plist').is_file() and (prefs/'NotificationCenter.plist').is_file()
-    for page in ('AppAnimations','NotificationCenter','Advanced'):
-        assert sum(x.get('cell')=='PSGroupCell' for x in plistlib.loads((prefs/(page+'.plist')).read_bytes())['items'])==1
-    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='0.3'
+    app_rows=plistlib.loads((prefs/'AppAnimations.plist').read_bytes())['items']
+    assert [x.get('label') for x in app_rows if x.get('cell')=='PSGroupCell']==[None,'Notification Center','Advanced']
+    assert not any(x.get('cell')=='PSLinkCell' for x in app_rows)
+    assert [x['key'] for x in app_rows if 'key' in x]==['AppAnimations','OpenSpeed','CloseSpeed','IconFlyIn','ClearSheet','Intensity','GestureBounce','FlyStrength','GlobalSlow']
+    assert plistlib.loads((prefs/'Info.plist').read_bytes())['CFBundleShortVersionString']=='0.3.3'
     out=[]
     for f in (lib,app):
         data=f.read_bytes()

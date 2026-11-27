@@ -1,0 +1,10 @@
+name: iOS 27 Animations 0.3.2 arm64 + 0.3.3 arm64e
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  rootless-arm64:
+    uses: ./.github/workflows/build-arm64-rootless.yml
+  roothide-arm64e:
+    uses: ./.github/workflows/build-roothide.yml
