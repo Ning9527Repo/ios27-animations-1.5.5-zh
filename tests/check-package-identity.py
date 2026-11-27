@@ -41,7 +41,8 @@ for page in ('Root', 'AppAnimations', 'NotificationCenter', 'Advanced', 'BannerA
 header = (ROOT / 'shared/LiquidSwitchConfiguration.h').read_text()
 assert 'CG27LSDomain = @"com.ning.ios2627anims";' in header
 assert 'CG27LSChanged = @"com.ning.ios2627anims/changed";' in header
-controller = (ROOT / 'iOS27Animations/Prefs/CG27RootListController.m').read_text()
+controller=(ROOT/'iOS27Animations/Prefs/CG27RootListController.m').read_text()
+assert 'static NSString *const kCG27BannerChanged = @"com.ning.ios2627anims/changed";' in controller
 assert 'CG27MigrateLegacyPreferences' not in controller
 runtime = (ROOT / 'iOS27Animations/Tweak.x').read_text()
 banner_runtime = (ROOT / 'iOS27Animations/BannerFeature/NB27Banner.m').read_text()

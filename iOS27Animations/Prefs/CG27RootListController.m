@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 static NSString *const kCG27Domain = @"com.ning.ios2627anims";
+static NSString *const kCG27BannerChanged = @"com.ning.ios2627anims/changed";
 
 @interface PSListController (CG27)
 - (NSArray *)loadSpecifiersFromPlistName:(NSString *)name target:(id)target bundle:(NSBundle *)bundle;
