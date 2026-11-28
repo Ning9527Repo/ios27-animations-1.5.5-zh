@@ -595,11 +595,18 @@ static void NB27AnimateHook(id animator,SEL cmd,id<UIViewControllerContextTransi
  NB27Session *outgoing=exit?NB27PrepareExit(animator,context,from,-1):nil;
  NB27Session *incoming=nil;
  if(entrance) {
-  NB27ClearController(to);NB27RemoveCardAnimations(card);incoming=NB27NewSession(to);
-  incoming.timeAnchor=NB27CompactPrepareTimeAnchor(context.containerView);
-  incoming.deadline=CACurrentMediaTime()+NB27ScaledDuration(incoming.transitionScale)+.15;
-  NB27GuardPath(incoming,NB27Root(context,to,YES),context.containerView);
-  NB27GuardPath(incoming,card,context.containerView);
+  NB27CompactAnchor anchor=NB27CompactPrepareTimeAnchor(context.containerView);
+  if(!anchor.valid) {
+   // Do not neutralize the system's entrance if we cannot measure the exact
+   // clock-line origin. A guessed start point is worse than native animation.
+   entrance=NO;
+  } else {
+   NB27ClearController(to);NB27RemoveCardAnimations(card);incoming=NB27NewSession(to);
+   incoming.timeAnchor=anchor;
+   incoming.deadline=CACurrentMediaTime()+NB27ScaledDuration(incoming.transitionScale)+.15;
+   NB27GuardPath(incoming,NB27Root(context,to,YES),context.containerView);
+   NB27GuardPath(incoming,card,context.containerView);
+  }
  }
  NB27OriginalAnimate(animator,cmd,context);
  if(context.transitionWasCancelled){NB27End(incoming);NB27End(outgoing);return;}
