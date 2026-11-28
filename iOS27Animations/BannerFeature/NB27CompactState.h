@@ -3,6 +3,20 @@
 #include <stdint.h>
 #include <math.h>
 
+static inline double NB27CompactFixedLineWidth(double screenWidth) {
+    if (!isfinite(screenWidth) || screenWidth <= 0) return NAN;
+    return fmin(48.0, fmax(34.0, screenWidth * 0.11));
+}
+static inline double NB27CompactFixedLineX(double screenMinX,double screenWidth) {
+    if (!isfinite(screenMinX) || !isfinite(screenWidth) || screenWidth <= 0) return NAN;
+    return screenMinX + screenWidth * 0.05;
+}
+static inline double NB27CompactFixedLineY(double barMinY,double barMaxY) {
+    if (!isfinite(barMinY) || !isfinite(barMaxY) || barMaxY <= barMinY) return NAN;
+    double height = barMaxY - barMinY;
+    return barMaxY - fmin(10.0, fmax(6.0, height * 0.19));
+}
+
 static inline double NB27CompactRaisedLineY(double barMinY,double barMaxY,double textMaxY,
     double currentY,double lineHeight,double raise,double textGap,double edgeInset) {
     if (!isfinite(barMinY) || !isfinite(barMaxY) || !isfinite(textMaxY) ||
