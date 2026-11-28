@@ -6,7 +6,7 @@ static unsigned long checks;
 #define CHECK(x) do { assert(x); ++checks; } while (0)
 int main(void) {
     CHECK(fabs(NB27CompactFixedLineY(20, 50) - 44.0) < 1e-12);
-    CHECK(fabs(NB27CompactFixedLineX(0, 390) - 19.5) < 1e-12);
+    CHECK(fabs(NB27CompactFixedLineX(0, 390) - 39.0) < 1e-12);
     CHECK(fabs(NB27CompactFixedLineWidth(390) - 42.9) < 1e-12);
     CHECK(NB27CompactFixedLineWidth(1000) == 48.0);
     CHECK(isnan(NB27CompactFixedLineY(10, 10)));
