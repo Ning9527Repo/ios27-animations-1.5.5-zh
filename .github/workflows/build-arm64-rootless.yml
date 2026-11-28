@@ -69,6 +69,11 @@ jobs:
           cp iOS27Animations/SwitchFeature/LICENSE-Theseus "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/LICENSE"
           cp iOS27Animations/SwitchFeature/NOTICE-Theseus "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/NOTICE"
           cp iOS27Animations/SwitchFeature/Vendor/manifest.json "$STAGE_ROOT/usr/share/doc/com.ning.ios2627anims/Theseus/vendor-manifest.json"
+          PREFS_EXEC=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$STAGE/Info.plist")
+          PREFS_BIN="$STAGE/$PREFS_EXEC"
+          test -f "$PREFS_BIN"
+          strip -S "$DYLIB"
+          strip -S "$PREFS_BIN"
           codesign --force --deep --sign - "$STAGE"
           codesign --force --sign - "$DYLIB"
           make -C iOS27Animations before-package internal-package after-package PACKAGE_VERSION='0.3.2' TARGET_CODESIGN=codesign TARGET_CODESIGN_FLAGS='--force --sign -'
