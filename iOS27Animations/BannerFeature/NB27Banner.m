@@ -835,7 +835,7 @@ __attribute__((constructor)) static void NB27Initialize(void) {
   dispatch_async(dispatch_get_main_queue(),^{
    NB27Sessions=[NSHashTable weakObjectsHashTable];NB27Reload();NB27Install();
    static int token=-1,originalToken=-1;
-   notify_register_dispatch("com.ning.ios2627anims.changed",&token,dispatch_get_main_queue(),^(int t){(void)t;NB27Reload();});
+   notify_register_dispatch("com.ning.ios2627anims/changed",&token,dispatch_get_main_queue(),^(int t){(void)t;NB27Reload();});
    notify_register_dispatch("com.wkk.glasssuitex.preferences.changed",&originalToken,dispatch_get_main_queue(),^(int t){(void)t;NB27Reload();});
    [NSNotificationCenter.defaultCenter addObserverForName:UIAccessibilityReduceMotionStatusDidChangeNotification
     object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *note){(void)note;NB27Reload();}];
