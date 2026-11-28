@@ -29,7 +29,7 @@
 - (void)tick:(NSTimer *)timer;
 @end
 static NB27CompactState State;
-static BOOL Requested, HaveAnchor;
+static BOOL Requested, HaveAnchor, EstimatedAnchor;
 static __weak UIWindowScene *Scene;
 static UIScreen *Screen;
 static CGRect ScreenBounds, SceneBounds, Bar, CacheBar, Line, SourceBounds;
@@ -63,7 +63,7 @@ static void CompactDiagnostic(NSString *reason) {
     }
 }
 static void CompactClearAnchor(void) {
-    HaveAnchor = NO; TimeItem = nil; TimeLabel = nil; SourceWindow = nil; Ink = nil;
+    HaveAnchor = NO; EstimatedAnchor = NO; TimeItem = nil; TimeLabel = nil; SourceWindow = nil; Ink = nil;
     if (Window) Window.hidden = YES;
 }
 static void CompactDropWindow(void) {
@@ -166,11 +166,10 @@ static BOOL CompactCapture(UIView *item, UIView *label) {
         !CGRectContainsRect(CGRectInset(Bar, -.5, -.5), i) ||
         !CGRectContainsRect(CGRectInset(i, -.5, -.5), l) ||
         l.size.width < l.size.height * .8 || i.size.width > ScreenBounds.size.width * .45) return NO;
-    CGFloat lineY = fmax(CGRectGetMaxY(Bar) - 4, CGRectGetMaxY(l) + 1);
-    CGFloat raisedLineY = NB27CompactRaisedLineY(CGRectGetMinY(Bar), CGRectGetMaxY(Bar),
-        CGRectGetMaxY(l), lineY, 2, 6, 3, 2);
-    if (!isfinite(raisedLineY)) return NO;
-    CGRect line = CGRectMake(CGRectGetMinX(i), raisedLineY, i.size.width, 2);
+    double fixedLineY = NB27CompactFixedLineY(CGRectGetMinY(Bar), CGRectGetMaxY(Bar));
+    if (!isfinite(fixedLineY)) return NO;
+    CGRect line = CGRectMake(NB27CompactFixedLineX(CGRectGetMinX(ScreenBounds), ScreenBounds.size.width),
+        fixedLineY, NB27CompactFixedLineWidth(ScreenBounds.size.width), 2.0);
     if (!CGRectContainsRect(Bar, line)) return NO;
     UIColor *color = [CompactTextColor(label) resolvedColorWithTraitCollection:label.traitCollection];
     if (!color || !color.CGColor) return NO;
@@ -308,6 +307,19 @@ static BOOL CompactScan(void) {
         @"time-item class absent, no visible valid HH:mm label in bounded status windows");
     return NO;
 }
+static BOOL CompactEstimateFixedAnchor(void) {
+    if (!CompactRect(ScreenBounds) || !CompactRect(Bar)) return NO;
+    CGFloat width = ScreenBounds.size.width;
+    CGFloat lineX = NB27CompactFixedLineX(CGRectGetMinX(ScreenBounds), width);
+    CGFloat lineWidth = NB27CompactFixedLineWidth(width);
+    CGFloat lineY = NB27CompactFixedLineY(CGRectGetMinY(Bar), CGRectGetMaxY(Bar));
+    CGRect line = CGRectMake(lineX, lineY, lineWidth, 2.0);
+    if (!CGRectContainsRect(Bar, line)) return NO;
+    Line = line; CacheBar = Bar; Ink = [UIColor.labelColor colorWithAlphaComponent:.55];
+    TimeItem = nil; TimeLabel = nil; SourceWindow = nil; SourceBounds = CGRectZero;
+    EstimatedAnchor = YES; HaveAnchor = YES;
+    return YES;
+}
 static BOOL CompactContext(UIView *card) {
     if (!CompactAllowed() || UIDevice.currentDevice.userInterfaceIdiom != UIUserInterfaceIdiomPhone) return NO;
     if (!CompactUnlocked()) {
@@ -328,12 +340,14 @@ static BOOL CompactContext(UIView *card) {
     Bar = bar;
     if (HaveAnchor && !CGRectEqualToRect(CacheBar, Bar)) CompactClearAnchor();
     UIWindow *source = SourceWindow;
-    if (HaveAnchor && source && (source.screen != screen ||
+    if (HaveAnchor && !EstimatedAnchor && source && (source.screen != screen ||
         (source.windowScene && (!CGRectEqualToRect(source.windowScene.coordinateSpace.bounds, SourceBounds) ||
          source.windowScene.interfaceOrientation != UIInterfaceOrientationPortrait)))) CompactClearAnchor();
-    if (HaveAnchor && (!TimeItem || !TimeLabel || !source ||
+    if (HaveAnchor && !EstimatedAnchor && (!TimeItem || !TimeLabel || !source ||
         !CompactCapture(TimeItem, TimeLabel))) CompactClearAnchor();
-    if (!HaveAnchor) CompactScan();
+    if (!HaveAnchor) {
+        if (!CompactScan()) CompactEstimateFixedAnchor();
+    }
     return HaveAnchor;
 }
 static float CompactFreezeOpacity(void) {
