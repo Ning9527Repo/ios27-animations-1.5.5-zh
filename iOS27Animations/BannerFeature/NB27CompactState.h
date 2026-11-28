@@ -9,7 +9,7 @@ static inline double NB27CompactFixedLineWidth(double screenWidth) {
 }
 static inline double NB27CompactFixedLineX(double screenMinX,double screenWidth) {
     if (!isfinite(screenMinX) || !isfinite(screenWidth) || screenWidth <= 0) return NAN;
-    return screenMinX + screenWidth * 0.05;
+    return screenMinX + screenWidth * 0.10;
 }
 static inline double NB27CompactFixedLineY(double barMinY,double barMaxY) {
     if (!isfinite(barMinY) || !isfinite(barMaxY) || barMaxY <= barMinY) return NAN;
