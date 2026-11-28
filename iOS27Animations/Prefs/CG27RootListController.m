@@ -54,7 +54,7 @@ static void CG27ApplySliderTint(UIView *view) {
 - (void)viewDidLoad {
     [super viewDidLoad];
     self.view.tintColor = CG27Tint();
-    [UISwitch appearanceWhenContainedInInstancesOfClasses:@[self.class]].onTintColor = CG27Tint();
+    [UISwitch appearanceWhenContainedInInstancesOfClasses:@[self.class]].onTintColor = UIColor.systemGreenColor;
     [UISlider appearanceWhenContainedInInstancesOfClasses:@[self.class]].minimumTrackTintColor = UIColor.systemBlueColor;
 }
 
