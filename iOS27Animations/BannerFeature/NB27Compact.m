@@ -168,8 +168,8 @@ static BOOL CompactCapture(UIView *item, UIView *label) {
         l.size.width < l.size.height * .8 || i.size.width > ScreenBounds.size.width * .45) return NO;
     double fixedLineY = NB27CompactFixedLineY(CGRectGetMinY(Bar), CGRectGetMaxY(Bar));
     if (!isfinite(fixedLineY)) return NO;
-    CGRect line = CGRectMake(NB27CompactFixedLineX(CGRectGetMinX(ScreenBounds), ScreenBounds.size.width),
-        fixedLineY, NB27CompactFixedLineWidth(ScreenBounds.size.width), 2.0);
+    CGRect line = CGRectMake(CGRectGetMinX(l), fixedLineY,
+        NB27CompactFixedLineWidth(ScreenBounds.size.width), 2.0);
     if (!CGRectContainsRect(Bar, line)) return NO;
     UIColor *color = [CompactTextColor(label) resolvedColorWithTraitCollection:label.traitCollection];
     if (!color || !color.CGColor) return NO;
@@ -177,7 +177,8 @@ static BOOL CompactCapture(UIView *item, UIView *label) {
     if (!isfinite(alpha) || alpha <= 0 || alpha > 1) return NO;
     TimeItem = item; TimeLabel = label; SourceWindow = w;
     SourceBounds = sourceScene ? sourceScene.coordinateSpace.bounds : CGRectZero;
-    Line = line; CacheBar = Bar; Ink = [color colorWithAlphaComponent:alpha * .55]; HaveAnchor = YES;
+    Line = line; CacheBar = Bar; Ink = [color colorWithAlphaComponent:alpha * .55];
+    EstimatedAnchor = NO; HaveAnchor = YES;
     return YES;
 }
 static BOOL CompactIsClockLabel(UIView *view);
@@ -307,6 +308,14 @@ static BOOL CompactScan(void) {
         @"time-item class absent, no visible valid HH:mm label in bounded status windows");
     return NO;
 }
+static UIColor *CompactStatusBarFallbackColor(void) {
+    UIStatusBarStyle style = Scene.statusBarManager.statusBarStyle;
+    BOOL lightText = style == UIStatusBarStyleLightContent;
+    if (@available(iOS 13.0, *)) {
+        if (style == UIStatusBarStyleDarkContent) lightText = NO;
+    }
+    return (lightText ? UIColor.whiteColor : UIColor.blackColor);
+}
 static BOOL CompactEstimateFixedAnchor(void) {
     if (!CompactRect(ScreenBounds) || !CompactRect(Bar)) return NO;
     CGFloat width = ScreenBounds.size.width;
@@ -315,7 +324,7 @@ static BOOL CompactEstimateFixedAnchor(void) {
     CGFloat lineY = NB27CompactFixedLineY(CGRectGetMinY(Bar), CGRectGetMaxY(Bar));
     CGRect line = CGRectMake(lineX, lineY, lineWidth, 2.0);
     if (!CGRectContainsRect(Bar, line)) return NO;
-    Line = line; CacheBar = Bar; Ink = [UIColor.labelColor colorWithAlphaComponent:.55];
+    Line = line; CacheBar = Bar; Ink = [CompactStatusBarFallbackColor() colorWithAlphaComponent:.55];
     TimeItem = nil; TimeLabel = nil; SourceWindow = nil; SourceBounds = CGRectZero;
     EstimatedAnchor = YES; HaveAnchor = YES;
     return YES;
@@ -347,6 +356,9 @@ static BOOL CompactContext(UIView *card) {
         !CompactCapture(TimeItem, TimeLabel))) CompactClearAnchor();
     if (!HaveAnchor) {
         if (!CompactScan()) CompactEstimateFixedAnchor();
+    } else if (EstimatedAnchor) {
+        /* Re-probe periodically so live status text/color can replace fallback. */
+        CompactScan();
     }
     return HaveAnchor;
 }
@@ -385,6 +397,15 @@ static BOOL CompactShow(void) {
     }
     CGRect local = [Window.rootViewController.view convertRect:Line fromCoordinateSpace:Screen.coordinateSpace];
     if (!CompactRect(local) || !CGRectContainsRect(Window.bounds, local)) { Window.hidden = YES; return NO; }
+    UIColor *currentInk = nil;
+    if (!EstimatedAnchor && TimeLabel) {
+        UIColor *nativeColor = CompactTextColor(TimeLabel);
+        currentInk = [nativeColor resolvedColorWithTraitCollection:TimeLabel.traitCollection];
+    }
+    if (!currentInk) {
+        currentInk = CompactStatusBarFallbackColor();
+    }
+    Ink = [currentInk colorWithAlphaComponent:.55];
     [CATransaction begin]; [CATransaction setDisableActions:YES];
     Stroke.frame = local; Stroke.backgroundColor = Ink.CGColor; [CATransaction commit];
     Window.hidden = NO; /* Never makeKey, never write any other window/root. */
