@@ -30,6 +30,7 @@ static double (*NB27OriginalBannerTransitionDuration)(id,SEL,id);
 static void (*NB27OriginalStartDismissTimer)(id,SEL);
 static id (*NB27OriginalStartTimerWithDelay)(id,SEL,unsigned long long,id);
 static BOOL NB27IsReplacement(id animator);
+static BOOL NB27IsReplacementTransition(id animator,id<UIViewControllerContextTransitioning> context);
 @class NB27Session;
 static void NB27End(NB27Session *s);
 static BOOL NB27Enabled(void);
@@ -72,7 +73,8 @@ static double NB27NativeExitDuration(id animator,id<UIViewControllerContextTrans
 @property(nonatomic,weak) UIView *card;
 @property(nonatomic,strong) NSHashTable<CALayer *> *guardedLayers;
 @property(nonatomic,copy) NSArray<NB27Pose *> *heldPoses;
-@property(nonatomic) BOOL active,exiting,motionOriginReady,retentionOnly;
+@property(nonatomic) BOOL active,exiting,motionOriginReady,retentionOnly,delayedEntrance;
+@property(nonatomic) float savedEntranceOpacity;
 @property(nonatomic) NSUInteger compactTicket;
 @property(nonatomic) double compactDX,compactDY,compactScaleX,compactScaleY,baseScaleX,baseScaleY;
 @property(nonatomic) double exitAdjustmentX,exitAdjustmentY;
@@ -112,6 +114,11 @@ static void NB27ReleaseExitVisual(NB27Session *s) {
 static void NB27End(NB27Session *s) {
  if(!s)return;[NB27Sessions removeObject:s];
  UIViewController *c=s.controller;
+ if(s.delayedEntrance) {
+  UIView *card=s.card;
+  if(card) { [CATransaction begin];[CATransaction setDisableActions:YES];card.layer.opacity=s.savedEntranceOpacity;[CATransaction commit]; }
+  s.delayedEntrance=NO;
+ }
  if(c&&NB27Associated(c,&NB27PendingKey)==s)
   objc_setAssociatedObject(c,&NB27PendingKey,nil,OBJC_ASSOCIATION_RETAIN_NONATOMIC);
  if(!s.active)return;s.active=NO;
@@ -253,6 +260,11 @@ static void NB27AnimateEntrance(NB27Session *s,UIView *card) {
  NB27RemoveCardAnimations(card);if(!s.active)return;s.card=card;
  NB27CompactNoteEntrance(card);
  if(!NB27MeasureCompactOrigin(s,card)){NB27End(s);return;}
+ if(s.delayedEntrance&&!s.motionOriginReady) { NB27End(s);return; }
+ if(s.delayedEntrance) {
+  [CATransaction begin];[CATransaction setDisableActions:YES];card.layer.opacity=s.savedEntranceOpacity;[CATransaction commit];
+  s.delayedEntrance=NO;
+ }
  s.timeAnchor=(NB27CompactAnchor){0};
  double duration=NB27ScaledDuration(s.transitionScale),w=CGRectGetWidth(card.bounds),h=CGRectGetHeight(card.bounds);
  CGPoint anchor=card.layer.anchorPoint;
@@ -408,7 +420,7 @@ static NB27Session *NB27PrepareExit(id animator,id<UIViewControllerContextTransi
  NB27End(old);NB27End(pending);
  NB27Session *s=NB27NewSession(controller);s.card=card;s.exiting=YES;s.heldPoses=poses;
  s.elasticity=elasticity;s.transitionScale=transitionScale;s.transitionContext=context;
- if(NB27IsReplacement(animator)) s.timeAnchor=NB27CompactPrepareTimeAnchor(context.containerView);
+ if(NB27IsReplacementTransition(animator,context)) s.timeAnchor=NB27CompactPrepareTimeAnchor(context.containerView);
  if(!NB27MeasureCompactOrigin(s,card)) {
   NB27CompactBeginExit(NO);NB27End(s);return nil;
  }
@@ -469,11 +481,68 @@ static void NB27AnimateHook(id animator,SEL cmd,id<UIViewControllerContextTransi
  Class transition=NSClassFromString(@"BNBannerTransitionAnimator");
  BOOL dismissing=transition&&[animator isKindOfClass:transition]&&knows&&!presenting&&!replacement;
  if(replacement) {
-  if(validFrom)NB27ClearController(from);
-  if(validTo)NB27ClearController(to);
-  if(!context.isInteractive)NB27BeginNativeExit(animator,context);
+  // Interactive replacements remain entirely system-owned. For the normal
+  // notification hand-off, preserve the outgoing compact-to-line animation,
+  // then start the incoming card from that same measured clock-line anchor.
+  if(context.isInteractive||!NB27Enabled()) {
+   if(validFrom)NB27ClearController(from);
+   if(validTo)NB27ClearController(to);
+   if(!context.isInteractive)NB27BeginNativeExit(animator,context);
+   NB27OriginalAnimate(animator,cmd,context);
+   if(context.transitionWasCancelled&&from)NB27AbortNativeExit(from);
+   return;
+  }
+  UIView *newCard=validTo?NB27Card(context,to,YES):nil;
+  BOOL animateIncoming=newCard&&NB27ValidCard(newCard)&&CGRectGetHeight(newCard.bounds)<=360;
+  NB27Session *outgoing=validFrom?NB27PrepareExit(animator,context,from,-1):nil;
+  NB27Session *incoming=nil;
+  if(animateIncoming) {
+   NB27ClearController(to);NB27RemoveCardAnimations(newCard);incoming=NB27NewSession(to);
+   incoming.timeAnchor=NB27CompactPrepareTimeAnchor(context.containerView);
+   animateIncoming=incoming.timeAnchor.valid;
+   if(animateIncoming) {
+    incoming.card=newCard;
+    incoming.savedEntranceOpacity=newCard.layer.opacity;
+    incoming.delayedEntrance=YES;
+    [CATransaction begin];[CATransaction setDisableActions:YES];newCard.layer.opacity=0;[CATransaction commit];
+    NB27Guard(incoming,newCard.layer);
+   } else NB27End(incoming);
+  }
+  // Keep the native path if either card or the outgoing clock-line geometry
+  // cannot be measured safely; never start the new card from a guessed point.
+  if(!animateIncoming||!outgoing||!outgoing.active||!outgoing.motionOriginReady) {
+   if(outgoing)NB27End(outgoing);
+   if(validFrom)NB27ClearController(from);
+   if(validTo)NB27ClearController(to);
+   NB27BeginNativeExit(animator,context);
+   NB27OriginalAnimate(animator,cmd,context);
+   if(context.transitionWasCancelled&&from)NB27AbortNativeExit(from);
+   return;
+  }
+  double nativeDuration=NB27NativeExitDuration(animator,context);
+  double delay=fmax(nativeDuration,outgoing.exitDuration>0?outgoing.exitDuration:0);
+  incoming.deadline=CACurrentMediaTime()+delay+NB27ScaledDuration(incoming.transitionScale)+.2;
   NB27OriginalAnimate(animator,cmd,context);
-  if(context.transitionWasCancelled&&from)NB27AbortNativeExit(from);
+  if(context.transitionWasCancelled) { NB27End(incoming);NB27End(outgoing);return; }
+  NB27AnimateExit(outgoing);
+  __weak NB27Session *weakIncoming=incoming;
+  __weak UIViewController *weakTo=to;
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW,(int64_t)(delay*NSEC_PER_SEC)),dispatch_get_main_queue(),^{
+   NB27Session *strong=weakIncoming;UIViewController *controller=weakTo;
+   if(!strong||!strong.active||!controller||context.transitionWasCancelled||!NB27Enabled()) {
+    NB27End(strong);return;
+   }
+   UIView *card=NB27Card(context,controller,YES);
+   if(!NB27ValidCard(card)) { NB27End(strong);return; }
+   if(card!=strong.card) {
+    UIView *previous=strong.card;
+    if(previous) { [CATransaction begin];[CATransaction setDisableActions:YES];previous.layer.opacity=strong.savedEntranceOpacity;[CATransaction commit]; }
+    strong.card=card;strong.savedEntranceOpacity=card.layer.opacity;
+    [CATransaction begin];[CATransaction setDisableActions:YES];card.layer.opacity=0;[CATransaction commit];
+   }
+   NB27Guard(strong,card.layer);
+   NB27AnimateEntrance(strong,card);
+  });
   return;
  }
  BOOL entrance=!context.isInteractive&&presenting&&validTo;
