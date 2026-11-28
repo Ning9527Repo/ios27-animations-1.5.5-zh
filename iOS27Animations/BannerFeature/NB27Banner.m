@@ -259,8 +259,14 @@ static void NB27AnimateEntrance(NB27Session *s,UIView *card) {
  if(!s)return;if(!NB27Enabled()){NB27End(s);return;}
  NB27RemoveCardAnimations(card);if(!s.active)return;s.card=card;
  NB27CompactNoteEntrance(card);
+ // Sample the clock line after the native transition has installed the final
+ // banner hierarchy. A pre-transition snapshot may map to the wrong position.
+ s.timeAnchor=NB27CompactPrepareTimeAnchor(card);
  if(!NB27MeasureCompactOrigin(s,card)){NB27End(s);return;}
- if(s.delayedEntrance&&!s.motionOriginReady) { NB27End(s);return; }
+ if(!s.motionOriginReady) {
+  NB27Diagnostic(@"entrance-fallback",@"clock-line origin unavailable; refusing guessed banner position");
+  NB27End(s);return;
+ }
  if(s.delayedEntrance) {
   [CATransaction begin];[CATransaction setDisableActions:YES];card.layer.opacity=s.savedEntranceOpacity;[CATransaction commit];
   s.delayedEntrance=NO;
