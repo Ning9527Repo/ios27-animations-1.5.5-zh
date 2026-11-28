@@ -259,9 +259,10 @@ static void NB27AnimateEntrance(NB27Session *s,UIView *card) {
  if(!s)return;if(!NB27Enabled()){NB27End(s);return;}
  NB27RemoveCardAnimations(card);if(!s.active)return;s.card=card;
  NB27CompactNoteEntrance(card);
- // Sample the clock line after the native transition has installed the final
- // banner hierarchy. A pre-transition snapshot may map to the wrong position.
- s.timeAnchor=NB27CompactPrepareTimeAnchor(card);
+ // Use the virtual clock-line geometry captured before the system transition.
+ // It is derived from the live status-time view and does not depend on whether
+ // the compact-line overlay is currently visible.
+ if(!s.timeAnchor.valid) s.timeAnchor=NB27CompactPrepareTimeAnchor(card);
  if(!NB27MeasureCompactOrigin(s,card)){NB27End(s);return;}
  if(!s.motionOriginReady) {
   NB27Diagnostic(@"entrance-fallback",@"clock-line origin unavailable; refusing guessed banner position");
