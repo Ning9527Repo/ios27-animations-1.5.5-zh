@@ -5,6 +5,11 @@
 static unsigned long checks;
 #define CHECK(x) do { assert(x); ++checks; } while (0)
 int main(void) {
+    CHECK(fabs(NB27CompactFixedLineY(20, 50) - 44.0) < 1e-12);
+    CHECK(fabs(NB27CompactFixedLineX(0, 390) - 19.5) < 1e-12);
+    CHECK(fabs(NB27CompactFixedLineWidth(390) - 42.9) < 1e-12);
+    CHECK(NB27CompactFixedLineWidth(1000) == 48.0);
+    CHECK(isnan(NB27CompactFixedLineY(10, 10)));
     double lineY = NB27CompactRaisedLineY(20, 50, 30, 44, 2, 6, 3, 2);
     CHECK(isfinite(lineY) && lineY == 38 && lineY >= 33 && lineY + 2 <= 48);
     CHECK(isnan(NB27CompactRaisedLineY(20, 40, 34, 38, 2, 6, 3, 2)));
